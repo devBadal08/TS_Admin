@@ -1,7 +1,19 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Models\Invoice;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/admin');
 });
+
+Route::get('/admin/invoice/{invoice}/pdf', function (Invoice $invoice) {
+    $pdf = Pdf::loadView('invoices.pdf', compact('invoice'))
+        ->setPaper('A4', 'portrait');
+
+    $cleanInvoiceNo = str_replace(['/', '\\'], '-', $invoice->invoice_no);
+
+    return $pdf->download('Invoice_' . $cleanInvoiceNo . '.pdf');
+})->name('invoice.pdf');
+

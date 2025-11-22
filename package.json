@@ -7,7 +7,7 @@
         "dev": "vite"
     },
     "devDependencies": {
-        "@tailwindcss/forms": "^0.5.2",
+        "@tailwindcss/forms": "^0.5.10",
         "@tailwindcss/typography": "^0.5.4",
         "@tailwindcss/vite": "^4.0.0",
         "autoprefixer": "^10.4.7",
@@ -15,7 +15,25 @@
         "laravel-vite-plugin": "^1.2.0",
         "postcss": "^8.4.14",
         "postcss-nesting": "^13.0.0",
-        "tailwindcss": "^4.0.0",
+        "tailwindcss": "^4.1.11",
         "vite": "^6.2.4"
-    }
+    },
+    "name": "ts-admin",
+    "version": "1.0.0",
+    "description": "<p align=\"center\"><a href=\"https://laravel.com\" target=\"_blank\"><img src=\"https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg\" width=\"400\" alt=\"Laravel Logo\"></a></p>",
+    "main": "postcss.config.js",
+    "directories": {
+        "test": "tests"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MAAZNEKI/TS-Admin.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/MAAZNEKI/TS-Admin/issues"
+    },
+    "homepage": "https://github.com/MAAZNEKI/TS-Admin#readme"
 }
