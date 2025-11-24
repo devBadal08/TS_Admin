@@ -106,18 +106,49 @@ class Invoice extends Model
 
     public static function generateNextInvoiceNumber(): string
     {
-        $year = date('Y');
+        $month = date('m');   // 11
+        $year  = date('Y');   // 2025
+        $monthYear = $month . '-' . $year; // 11-2025
 
+        // Get last invoice from same month & year
         $lastInvoice = self::whereYear('created_at', $year)
-            ->latest()
+            ->whereMonth('created_at', $month)
+            ->orderBy('id', 'desc')
             ->first();
 
-        $lastNumber = $lastInvoice
-            ? (int) explode('/', $lastInvoice->invoice_no)[1]
-            : 0;
+        if ($lastInvoice) {
+            // Example: TS/INV05/11-2025
+            preg_match('/INV(\d+)/', $lastInvoice->invoice_no, $matches);
+            $lastNumber = isset($matches[1]) ? (int) $matches[1] : 0;
+        } else {
+            $lastNumber = 0;
+        }
 
         $next = $lastNumber + 1;
 
-        return 'TS/' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $year;
+        return 'TS/INV' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
+    }
+
+    public static function generateNextReceiptNumber(): string
+    {
+        $monthYear = date('m-Y');
+
+        // Collect all existing receipt numbers
+        $numbers = self::whereNotNull('installments')->get()
+            ->pluck('installments')
+            ->flatten(1)
+            ->pluck('receipt_no')
+            ->filter()
+            ->map(function ($item) {
+                if (preg_match('/TS\/PR(\d+)\//', $item, $matches)) {
+                    return (int) $matches[1];
+                }
+                return 0;
+            });
+
+        $lastNumber = $numbers->max() ?? 0;
+        $next = $lastNumber + 1;
+
+        return 'TS/PR' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
     }
 }

@@ -319,7 +319,7 @@
                         <strong style="color:#1d4ed8; font-size:15px;">Payment Details</strong><br><br>
 
                         <b>Invoice Amount:</b> ₹ {{ number_format($invoice->amount,2) }} <br>
-                        <b>Advance Paid:</b> ₹ {{ number_format($invoice->advancePayment ?? 0,2) }} <br>
+                        <b>Advance Receive:</b> ₹ {{ number_format($invoice->advancePayment ?? 0,2) }} <br>
                         <b>Balance Payable:</b>
                         <span style="color:red">
                             ₹ {{ number_format($invoice->amount - ($invoice->advancePayment ?? 0),2) }}

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\InvoiceController;
 
 Route::get('/', function () {
     return redirect('/admin');
@@ -16,4 +17,8 @@ Route::get('/admin/invoice/{invoice}/pdf', function (Invoice $invoice) {
 
     return $pdf->download('Invoice_' . $cleanInvoiceNo . '.pdf');
 })->name('invoice.pdf');
+
+Route::get('/receipt/{invoice}', [InvoiceController::class, 'generateReceipt'])
+     ->name('payment.receipt');
+
 

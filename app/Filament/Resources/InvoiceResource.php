@@ -45,9 +45,21 @@ class InvoiceResource extends Resource
             /* ========== BANK DETAILS (JSON) ========== */
             Forms\Components\Fieldset::make('Bank Details')
                 ->schema([
-                    Forms\Components\TextInput::make('bank_details.account')->label('Account No')->required(),
-                    Forms\Components\TextInput::make('bank_details.ifsc')->label('IFSC')->required(),
-                    Forms\Components\TextInput::make('bank_details.branch')->label('Branch')->required(),
+                    Forms\Components\TextInput::make('bank_details.account')
+                            ->label('Account No')
+                            ->default('1147535073')
+                            ->disabled()
+                            ->required(),
+                        Forms\Components\TextInput::make('bank_details.ifsc')
+                            ->label('IFSC')
+                            ->default('KKBK0000841')
+                            ->disabled()
+                            ->required(),
+                        Forms\Components\TextInput::make('bank_details.branch')
+                            ->label('Branch')
+                            ->default('Vadodara - Race Course Circle')
+                            ->disabled()
+                            ->required(),
                 ]),
 
             /* ========== GST TYPE ========== */
@@ -118,6 +130,15 @@ class InvoiceResource extends Resource
                 ->dehydrated()
                 ->columnSpanFull()
                 ->required(),
+
+            Forms\Components\TextInput::make('total_paid')
+                ->label('Total Paid')
+                ->disabled()
+                ->reactive(),
+
+            Forms\Components\TextInput::make('remaining_amount')
+                ->label('Final Due Amount')
+                ->disabled(),
 
             /* ========== TERMS & CONDITIONS ========== */
             Forms\Components\Textarea::make('terms')
@@ -195,7 +216,12 @@ class InvoiceResource extends Resource
                     ->url(fn (Invoice $record) => route('invoice.pdf', $record))
                     ->openUrlInNewTab(),
             ])
-            ->defaultSort('id','desc');
+            ->defaultSort('id','desc')
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getPages(): array
