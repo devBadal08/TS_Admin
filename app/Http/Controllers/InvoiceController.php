@@ -2,43 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Invoice;
+use App\Models\PaymentReceipt;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
 {
-    public function generateReceipt(Invoice $invoice)
+    public function generateReceipt(PaymentReceipt $receipt)
     {
-        $installments = collect($invoice->installments ?? []);
+        $payments = collect($receipt->payments ?? []);
 
-        if ($installments->isEmpty()) {
+        if ($payments->isEmpty()) {
             abort(404, 'No payment found');
         }
 
-        $latestIndex = $installments->count() - 1;
-        $payment = $installments[$latestIndex];
+        $latestIndex = $payments->count() - 1;
+        $payment = $payments[$latestIndex];
 
-        // ✅ If receipt not generated yet, auto create
         if (!isset($payment['receipt_no'])) {
-            $payment['receipt_no'] = Invoice::generateNextReceiptNumber();
 
-            $installments[$latestIndex] = $payment;
+            $payment['receipt_no'] = $receipt->receipt_no 
+                ?? PaymentReceipt::generateNextReceiptNumber();
 
-            $invoice->installments = $installments->values()->all();
-            $invoice->save();
+            $payments[$latestIndex] = $payment;
+
+            $receipt->payments = $payments->values()->all();
+            $receipt->receipt_no = $payment['receipt_no'];
+            $receipt->save();
         }
-
-        $totalPaid = $installments->sum('amount');
-        $remaining = $invoice->amount - $totalPaid;
 
         $cleanReceipt = str_replace(['/', '\\'], '-', $payment['receipt_no']);
 
         return Pdf::loadView('invoices.payment_receipt', [
-            'invoice'   => $invoice,
-            'payment'   => $payment,
-            'totalPaid' => $totalPaid,
-            'remaining' => $remaining
+            'receipt' => $receipt,
+            'payment' => $payment,
         ])
         ->setPaper('A4', 'portrait')
         ->download('Receipt-' . $cleanReceipt . '.pdf');

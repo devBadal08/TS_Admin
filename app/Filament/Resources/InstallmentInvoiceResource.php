@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\InstallmentInvoiceResource\Pages;
 use App\Filament\Resources\InstallmentInvoiceResource\RelationManagers;
-use App\Models\Invoice;
+use App\Models\PaymentReceipt;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,58 +15,33 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InstallmentInvoiceResource extends Resource
 {
-    protected static ?string $model = Invoice::class;
+    protected static ?string $model = PaymentReceipt::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Payment Receipts';
     protected static ?string $navigationGroup = 'Invoices Management';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                /* ========== INVOICE NUMBER ========== */
-                Forms\Components\Placeholder::make('receipt_no')
-                    ->label('Payment Receipt No')
-                    ->content(fn ($record) =>
-                        collect($record?->installments ?? [])->last()['receipt_no']
-                        ?? \App\Models\Invoice::generateNextReceiptNumber()
-                    ),
+                /* ========== Payment Receipt number ========== */
+                Forms\Components\Hidden::make('receipt_no')
+                    ->default(fn () => PaymentReceipt::generateNextReceiptNumber()),
 
-                Forms\Components\DatePicker::make('invoice_date')
-                    ->label('Invoice Date')
-                    ->required()
-                    ->default(now()),
+                Forms\Components\Placeholder::make('display_receipt_no')
+                    ->label('Receipt No')
+                    ->content(fn ($record) =>
+                        $record?->receipt_no ?? PaymentReceipt::generateNextReceiptNumber()
+                    ),
 
                 /* ========== CUSTOMER DETAILS (JSON) ========== */
                 Forms\Components\Fieldset::make('Customer Details')
                     ->schema([
                         Forms\Components\TextInput::make('customer.name')->required(),
                         Forms\Components\TextInput::make('customer.mobile')->required(),
-                        Forms\Components\Textarea::make('customer.address')->required(),
-                    ]),
-
-                /* ========== BANK DETAILS (JSON) ========== */
-                Forms\Components\Fieldset::make('Bank Details')
-                    ->schema([
-                        Forms\Components\TextInput::make('bank_details.account')
-                            ->label('Account No')
-                            ->default('1147535073')
-                            ->disabled()
-                            ->dehydrated()
-                            ->required(),
-                        Forms\Components\TextInput::make('bank_details.ifsc')
-                            ->label('IFSC')
-                            ->default('KKBK0000841')
-                            ->disabled()
-                            ->dehydrated()
-                            ->required(),
-                        Forms\Components\TextInput::make('bank_details.branch')
-                            ->label('Branch')
-                            ->default('Vadodara - Race Course Circle')
-                            ->disabled()
-                            ->dehydrated()
-                            ->required(),
+                        Forms\Components\Textarea::make('customer.address'),
                     ]),
 
                 /* ========== GST TYPE ========== */
@@ -78,66 +53,55 @@ class InstallmentInvoiceResource extends Resource
                     ])
                     ->required()
                     ->reactive()
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->afterStateUpdated(fn ($set, $get) => self::updateTotalFromInstallments($set, $get)),
 
                 /* ===== GST RATE (JSON) ===== */
                 Forms\Components\Group::make()
                     ->visible(fn ($get) => $get('gst_type') === 'cgst_sgst')
                     ->schema([
-                        Forms\Components\TextInput::make('gst_rate.cgst')->label('CGST %')->numeric(),
-                        Forms\Components\TextInput::make('gst_rate.sgst')->label('SGST %')->numeric(),
+                        Forms\Components\TextInput::make('gst_rate.cgst')
+                            ->label('CGST %')
+                            ->numeric()
+                            ->reactive()
+                            ->afterStateUpdated(fn ($set, $get) => self::updateTotalFromInstallments($set, $get)),
+
+                        Forms\Components\TextInput::make('gst_rate.sgst')
+                            ->label('SGST %')
+                            ->numeric()
+                            ->reactive()
+                            ->afterStateUpdated(fn ($set, $get) => self::updateTotalFromInstallments($set, $get)),
                     ]),
 
                 Forms\Components\TextInput::make('gst_rate.igst')
                     ->label('IGST %')
                     ->numeric()
-                    ->visible(fn ($get) => $get('gst_type') === 'igst'),
-
-                /* ========== ITEMS (JSON REPEATER) ========== */
-                Forms\Components\Repeater::make('items')
-                    ->label('Invoice Items')
-                    ->required()
-                    ->schema([
-                        Forms\Components\TextInput::make('description'),
-
-                        Forms\Components\TextInput::make('qty')
-                            ->numeric()
-                            ->default(1)
-                            ->reactive(),
-
-                        Forms\Components\TextInput::make('rate')
-                            ->numeric()
-                            ->reactive(),
-                    ])
                     ->reactive()
-                    ->afterStateUpdated(fn ($set, $get) => self::calculateSubTotal($set, $get))
-                    ->columns(3)
-                    ->columnSpanFull(),
+                    ->visible(fn ($get) => $get('gst_type') === 'igst')
+                    ->afterStateUpdated(fn ($set, $get) => self::updateTotalFromInstallments($set, $get)),
 
-                /* ========== SUBTOTAL & TOTAL AMOUNT ========== */
-                Forms\Components\TextInput::make('subtotal')
-                    ->label('Subtotal')
-                    ->disabled()
-                    ->columnSpanFull(),
-
-                /* ========== ADVANCE PAYMENT ========== */
-                Forms\Components\TextInput::make('advancePayment')
-                    ->label('Advance Payment')
-                    ->numeric()
-                    ->reactive()
-                    ->required()
-                    ->columnSpanFull()
-                    ->afterStateUpdated(fn ($set, $get) => self::calculateGrandTotal($set, $get)),
-
-                Forms\Components\Repeater::make('installments')
-                    ->label('Installment Payments')
+                /* ========== Payment ========== */
+                Forms\Components\Repeater::make('payments')
+                    ->label('Payments')
                     ->schema([
                         Forms\Components\TextInput::make('receipt_no')
                             ->label('Receipt No')
-                            ->default(fn () => \App\Models\Invoice::generateNextReceiptNumber())
+                            ->default(fn () => PaymentReceipt::generateNextReceiptNumber())
                             ->disabled()
                             ->dehydrated()
                             ->required(),
+
+                        Forms\Components\Select::make('method')
+                            ->label('Payment Method')
+                            ->options([
+                                'Cash'        => 'Cash',
+                                'UPI'         => 'UPI',
+                                'Bank Transfer' => 'Bank Transfer',
+                                'Cheque'      => 'Cheque',
+                                'Card'         => 'Card',
+                            ])
+                            ->required()
+                            ->reactive(),
 
                         Forms\Components\TextInput::make('amount')
                             ->numeric()
@@ -146,6 +110,9 @@ class InstallmentInvoiceResource extends Resource
                         Forms\Components\DatePicker::make('date')
                             ->required(),
                     ])
+                    ->reactive()
+                    ->columns(4)
+                    ->afterStateUpdated(fn ($set, $get) => self::updateTotalFromInstallments($set, $get))
                     ->columnSpanFull(),
 
                 /* ========== TOTAL AMOUNT ========== */
@@ -155,50 +122,44 @@ class InstallmentInvoiceResource extends Resource
                     ->disabled()
                     ->dehydrated()
                     ->columnSpanFull()
+                    ->reactive()
                     ->required(),
             ]);
     }
 
-    // SUBTOTAL FROM ITEMS (for live UI update)
-    public static function calculateSubTotal($set, $get): void
+    public static function updateTotalFromInstallments($set, $get): void
     {
-        $items = $get('items') ?? [];
+        $payments = $get('payments') ?? [];
 
-        $subtotal = collect($items)->sum(function ($item) {
-            return ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
+        // 1. Total of all payments
+        $subtotal = collect($payments)->sum(function ($payment) {
+            return (float) ($payment['amount'] ?? 0);
         });
 
-        // save into subtotal (NOT amount)
-        $set('subtotal', round($subtotal, 2));
-
-        self::calculateGrandTotal($set, $get);
-    }
-
-    // GRAND TOTAL (for live UI update)
-    public static function calculateGrandTotal($set, $get): void
-    {
-        $subtotal = $get('subtotal') ?? 0;
-        $advance  = $get('advancePayment') ?? 0;
-
+        // 2. GST type
         $gstType = $get('gst_type');
 
         if ($gstType === 'no_gst') {
-            $total = $subtotal - $advance;
-        } elseif ($gstType === 'cgst_sgst') {
-            $cgstRate = $get('gst_rate.cgst') ?? 0;
-            $sgstRate = $get('gst_rate.sgst') ?? 0;
+            $total = $subtotal;
+        } 
+        elseif ($gstType === 'cgst_sgst') {
+            $cgstRate = (float) ($get('gst_rate.cgst') ?? 0);
+            $sgstRate = (float) ($get('gst_rate.sgst') ?? 0);
 
             $cgst = ($subtotal * $cgstRate) / 100;
             $sgst = ($subtotal * $sgstRate) / 100;
 
-            $total = $subtotal + $cgst + $sgst - $advance;
-        } else { // igst
-            $igstRate = $get('gst_rate.igst') ?? 0;
+            $total = $subtotal + $cgst + $sgst;
+        } 
+        else { // IGST
+            $igstRate = (float) ($get('gst_rate.igst') ?? 0);
+
             $igst = ($subtotal * $igstRate) / 100;
 
-            $total = $subtotal + $igst - $advance;
+            $total = $subtotal + $igst;
         }
 
+        // 3. Set final total amount
         $set('amount', round($total, 2));
     }
 
@@ -210,11 +171,11 @@ class InstallmentInvoiceResource extends Resource
                     ->label('Receipt No')
                     ->getStateUsing(function ($record) {
 
-                        $installments = is_string($record->installments)
-                            ? json_decode($record->installments, true)
-                            : $record->installments;
+                        $payments = is_string($record->payments)
+                            ? json_decode($record->payments, true)
+                            : $record->payments;
 
-                        $last = collect($installments)->last();
+                        $last = collect($payments)->last();
 
                         return $last['receipt_no'] ?? '-';
                     })
@@ -231,7 +192,7 @@ class InstallmentInvoiceResource extends Resource
                 Tables\Actions\Action::make('Payment Receipt')
                     ->icon('heroicon-o-receipt-refund')
                     ->color('success')
-                    ->url(fn (Invoice $record) => route('payment.receipt', $record))
+                    ->url(fn (PaymentReceipt $record) => route('payment.receipt', $record))
                     ->openUrlInNewTab(),
             ])
             ->defaultSort('id','desc')
@@ -261,7 +222,7 @@ class InstallmentInvoiceResource extends Resource
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return parent::getEloquentQuery()
-            ->whereNotNull('installments')
-            ->where('installments', '!=', '[]');
+            ->whereNotNull('payments')
+            ->where('payments', '!=', '[]');
     }
 }

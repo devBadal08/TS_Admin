@@ -16,17 +16,23 @@ class InvoiceResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Final Invoices';
     protected static ?string $navigationGroup = 'Invoices Management';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
         return $form->schema([
 
             /* ========== INVOICE NUMBER ========== */
-            Forms\Components\Placeholder::make('invoice_no')
-                ->label('Invoice Number')
+            Forms\Components\Hidden::make('invoice_no')
+                ->default(fn () => Invoice::generateNextInvoiceNumber()),
+
+            Forms\Components\Hidden::make('invoice_type')
+                ->default('invoice'),
+
+            Forms\Components\Placeholder::make('display_invoice_no')
+                ->label('Invoice No')
                 ->content(fn ($record) =>
-                    $record?->invoice_no 
-                    ?? \App\Models\Invoice::generateNextInvoiceNumber()
+                    $record?->invoice_no ?? Invoice::generateNextInvoiceNumber()
                 ),
 
             Forms\Components\DatePicker::make('invoice_date')

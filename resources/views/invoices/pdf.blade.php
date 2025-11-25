@@ -356,8 +356,7 @@
 
     <!-- SIGNATURE -->
     <div class="sign">
-        For,<br>
-        <strong>TECHSTROTA</strong><br>
+        For,<strong>TECHSTROTA</strong><br><br><br>
         {{ $invoice->signatureName ?? 'Authorized Signature' }}
     </div>
 

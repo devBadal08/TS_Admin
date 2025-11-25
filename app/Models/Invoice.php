@@ -39,6 +39,9 @@ class Invoice extends Model
     protected static function booted()
     {
         static::creating(function ($invoice) {
+            if ($invoice->invoice_type === 'invoice' && empty($invoice->invoice_no)) {
+                $invoice->invoice_no = self::generateNextInvoiceNumber();
+            }
 
             /* ========== SELLER AUTO ========== */
             $invoice->seller = [
@@ -129,26 +132,22 @@ class Invoice extends Model
         return 'TS/INV' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
     }
 
-    public static function generateNextReceiptNumber(): string
+    public static function generateNextProformaNumber(): string
     {
-        $monthYear = date('m-Y');
+        $monthYear = now()->format('m-Y');
 
-        // Collect all existing receipt numbers
-        $numbers = self::whereNotNull('installments')->get()
-            ->pluck('installments')
-            ->flatten(1)
-            ->pluck('receipt_no')
-            ->filter()
-            ->map(function ($item) {
-                if (preg_match('/TS\/PR(\d+)\//', $item, $matches)) {
-                    return (int) $matches[1];
-                }
-                return 0;
-            });
+        $lastInvoice = self::where('invoice_no', 'like', "TS/PI%/$monthYear")
+            ->latest('id')
+            ->first();
 
-        $lastNumber = $numbers->max() ?? 0;
-        $next = $lastNumber + 1;
+        if ($lastInvoice) {
+            preg_match('/TS\/PI(\d+)\/' . $monthYear . '/', $lastInvoice->invoice_no, $matches);
+            $lastNumber = isset($matches[1]) ? (int) $matches[1] : 0;
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
 
-        return 'TS/PR' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
+        return 'TS/PI' . str_pad($nextNumber, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
     }
 }

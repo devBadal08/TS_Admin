@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Receipt {{ $invoice->invoice_no }}</title>
+    <title>Receipt {{ $receipt->receipt_no ?? '' }}</title>
 
     <style>
         @page { margin: 10px 10px 20px 10px; }
@@ -64,7 +64,7 @@
 
             <td width="30%" class="right">
                 <div class="company-name">TECHSTROTA</div>
-                {{ $invoice->seller['address'] ?? '' }}
+                156, 1st Floor, C Tower, K10 Atlantis, Sarabhai Campus, Vadodara - 390007
             </td>
         </tr>
     </table>
@@ -74,13 +74,13 @@
     <table>
         <tr>
             <td>
-                <strong>Customer:</strong> {{ $invoice->customer['name'] }} <br>
-                <strong>Mobile:</strong> {{ $invoice->customer['mobile'] }}
+                <strong>Customer:</strong> {{ $receipt->customer['name'] ?? '' }} <br>
+                <strong>Mobile:</strong> {{ $receipt->customer['mobile'] ?? '' }}
             </td>
 
             <td class="right">
-                <strong>Receipt No:</strong> {{ $payment['receipt_no'] ?? 'N/A' }} <br>
-                <strong>Date:</strong> {{ \Carbon\Carbon::parse($payment['date'])->format('d-m-Y') }}
+                <strong>Receipt No:</strong> {{ $payment['receipt_no'] ?? $receipt->receipt_no ?? 'N/A' }} <br>
+                <strong>Date:</strong> {{ isset($payment['date']) ? \Carbon\Carbon::parse($payment['date'])->format('d-m-Y') : now()->format('d-m-Y') }}
             </td>
         </tr>
     </table>
@@ -97,46 +97,23 @@
         <tbody>
         <tr>
             <td>Payment Received ({{ $payment['method'] ?? 'N/A' }})</td>
-            <td class="right">₹ {{ number_format($payment['amount'],2) }}</td>
+            <td class="right">₹ {{ number_format($payment['amount'] ?? 0, 2) }}</td>
         </tr>
         </tbody>
     </table>
 
     <br>
 
-    <!-- <table>
-        <tr>
-            <td><strong>Total Invoice Amount</strong></td>
-            <td class="right">₹ {{ number_format($invoice->amount,2) }}</td>
-        </tr>
-        <tr>
-            <td><strong>Total Paid</strong></td>
-            <td class="right">₹ {{ number_format($totalPaid,2) }}</td>
-        </tr>
-        <tr>
-            <td><strong>Remaining Balance</strong></td>
-            <td class="right" style="color:red;">
-                ₹ {{ number_format($remaining,2) }}
-            </td>
-        </tr>
-    </table> -->
-
-    <br>
-
-    <!-- BANK DETAILS -->
-    <table style="width:100%;">
-        <tr>
-            <td style="padding:20px; border-radius:20px; border:1px solid #e6efff; background:#f7fbff;">
-                <strong>Bank Details</strong><br><br>
-                Account: {{ $invoice->bank_details['account'] }}<br>
-                IFSC: {{ $invoice->bank_details['ifsc'] }}<br>
-                Branch: {{ $invoice->bank_details['branch'] }}
-            </td>
-        </tr>
-    </table>
-
     <br><br>
-
+    <br><br>
+    <br><br>
+    <br><br>
+    <br><br>
+    <br><br>
+    <br><br>
+    <br><br>
+    <br><br>
+    <br><br>
     <!-- SIGNATURE BOX (BELOW + RIGHT SIDE) -->
     <table style="width:100%; border:none;">
         <tr>

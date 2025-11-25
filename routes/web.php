@@ -18,7 +18,6 @@ Route::get('/admin/invoice/{invoice}/pdf', function (Invoice $invoice) {
     return $pdf->download('Invoice_' . $cleanInvoiceNo . '.pdf');
 })->name('invoice.pdf');
 
-Route::get('/receipt/{invoice}', [InvoiceController::class, 'generateReceipt'])
-     ->name('payment.receipt');
-
+Route::get('/receipt/{receipt}', [InvoiceController::class, 'generateReceipt'])
+    ->name('payment.receipt');
 
