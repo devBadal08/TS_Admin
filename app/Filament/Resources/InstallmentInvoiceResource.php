@@ -84,12 +84,13 @@ class InstallmentInvoiceResource extends Resource
                 Forms\Components\Repeater::make('payments')
                     ->label('Payments')
                     ->schema([
-                        Forms\Components\TextInput::make('receipt_no')
-                            ->label('Receipt No')
-                            ->default(fn () => PaymentReceipt::generateNextReceiptNumber())
-                            ->disabled()
-                            ->dehydrated()
-                            ->required(),
+                        // Forms\Components\TextInput::make('receipt_no')
+                        //     ->label('Receipt No')
+                        //     ->default(fn () => PaymentReceipt::generateNextReceiptNumber())
+                        //     ->disabled()
+                        //     ->dehydrated()
+                        //     ->unique()
+                        //     ->required(),
 
                         Forms\Components\Select::make('method')
                             ->label('Payment Method')
@@ -133,18 +134,18 @@ class InstallmentInvoiceResource extends Resource
 
         // 1. Total of all payments
         $subtotal = collect($payments)->sum(function ($payment) {
-            return (float) ($payment['amount'] ?? 0);
+            return floatval($payment['amount'] ?? 0);
         });
 
-        // 2. GST type
+        // 2. GST
         $gstType = $get('gst_type');
 
         if ($gstType === 'no_gst') {
             $total = $subtotal;
         } 
         elseif ($gstType === 'cgst_sgst') {
-            $cgstRate = (float) ($get('gst_rate.cgst') ?? 0);
-            $sgstRate = (float) ($get('gst_rate.sgst') ?? 0);
+            $cgstRate = floatval($get('gst_rate.cgst') ?: 0);
+            $sgstRate = floatval($get('gst_rate.sgst') ?: 0);
 
             $cgst = ($subtotal * $cgstRate) / 100;
             $sgst = ($subtotal * $sgstRate) / 100;
@@ -152,14 +153,13 @@ class InstallmentInvoiceResource extends Resource
             $total = $subtotal + $cgst + $sgst;
         } 
         else { // IGST
-            $igstRate = (float) ($get('gst_rate.igst') ?? 0);
+            $igstRate = floatval($get('gst_rate.igst') ?: 0);
 
             $igst = ($subtotal * $igstRate) / 100;
 
             $total = $subtotal + $igst;
         }
 
-        // 3. Set final total amount
         $set('amount', round($total, 2));
     }
 
@@ -167,19 +167,7 @@ class InstallmentInvoiceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('receipt_no')
-                    ->label('Receipt No')
-                    ->getStateUsing(function ($record) {
-
-                        $payments = is_string($record->payments)
-                            ? json_decode($record->payments, true)
-                            : $record->payments;
-
-                        $last = collect($payments)->last();
-
-                        return $last['receipt_no'] ?? '-';
-                    })
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('receipt_no')->label('Receipt No'),
                 Tables\Columns\TextColumn::make('customer.name')->label('Customer'),
                 Tables\Columns\TextColumn::make('amount')->money('INR'),
             ])

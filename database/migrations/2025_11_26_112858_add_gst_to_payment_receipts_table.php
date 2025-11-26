@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('invoices', function (Blueprint $table) {
-            $table->json('installments')->nullable()->after('items');
+        Schema::table('payment_receipts', function (Blueprint $table) {
+            $table->string('gst_type')->nullable()->after('customer');
+            $table->json('gst_rate')->nullable()->after('gst_type');
         });
     }
 
@@ -21,8 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('invoices', function (Blueprint $table) {
-            $table->dropColumn('installments');
+        Schema::table('payment_receipts', function (Blueprint $table) {
+            $table->dropColumn('gst_type');
+            $table->dropColumn('gst_rate');
         });
     }
 };

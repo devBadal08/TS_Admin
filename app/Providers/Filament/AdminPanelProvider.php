@@ -27,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->favicon(asset('images/favicon.png'))
             ->brandname('Techstrota Admin')
             ->colors([
                 'primary' => Color::Amber,

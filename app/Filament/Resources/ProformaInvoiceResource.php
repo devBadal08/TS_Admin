@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProformaInvoiceResource\Pages;
 use App\Filament\Resources\ProformaInvoiceResource\RelationManagers;
-use App\Models\Invoice;
+use App\Models\ProformaInvoice;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProformaInvoiceResource extends Resource
 {
-    protected static ?string $model = Invoice::class;
+    protected static ?string $model = ProformaInvoice::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Proforma Invoices';
@@ -26,17 +26,11 @@ class ProformaInvoiceResource extends Resource
     {
         return $form
             ->schema([
-                /* ========== Proforma invoice NUMBER ========== */
-                Forms\Components\Hidden::make('invoice_type')->default('proforma'),
-
-                Forms\Components\Hidden::make('proforma_no')
-                    ->default(fn () => Invoice::generateNextProformaNumber()),
-
-                Forms\Components\Placeholder::make('display_proforma_no')
+                Forms\Components\Placeholder::make('proforma_invoice_no')
                     ->label('Proforma No')
                     ->content(fn ($record) =>
-                        $record?->proforma_no ?? Invoice::generateNextProformaNumber()
-                    ),
+                        $record?->proforma_invoice_no ?? ProformaInvoice::previewNextProformaNumber()
+                ),
 
                 Forms\Components\DatePicker::make('invoice_date')
                     ->label('Invoice Date')
@@ -57,16 +51,19 @@ class ProformaInvoiceResource extends Resource
                                 ->label('Account No')
                                 ->default('1147535073')
                                 ->disabled()
+                                ->dehydrated(true)
                                 ->required(),
                             Forms\Components\TextInput::make('bank_details.ifsc')
                                 ->label('IFSC')
                                 ->default('KKBK0000841')
                                 ->disabled()
+                                ->dehydrated(true)
                                 ->required(),
                             Forms\Components\TextInput::make('bank_details.branch')
                                 ->label('Branch')
                                 ->default('Vadodara - Race Course Circle')
                                 ->disabled()
+                                ->dehydrated(true)
                                 ->required(),
                     ]),
 
@@ -139,15 +136,6 @@ class ProformaInvoiceResource extends Resource
                     ->columnSpanFull()
                     ->required(),
 
-                Forms\Components\TextInput::make('total_paid')
-                    ->label('Total Paid')
-                    ->disabled()
-                    ->reactive(),
-
-                Forms\Components\TextInput::make('remaining_amount')
-                    ->label('Final Due Amount')
-                    ->disabled(),
-
                 /* ========== TERMS & CONDITIONS ========== */
                 Forms\Components\Textarea::make('terms')
                     ->label('Terms & Conditions')
@@ -182,8 +170,8 @@ class ProformaInvoiceResource extends Resource
     // GRAND TOTAL (for live UI update)
     public static function calculateGrandTotal($set, $get): void
     {
-        $subtotal = $get('subtotal') ?? 0;
-        $advance  = $get('advancePayment') ?? 0;
+        $subtotal = floatval($get('subtotal') ?: 0);
+        $advance = floatval($get('advancePayment') ?: 0);
 
         $gstType = $get('gst_type');
 
@@ -211,6 +199,7 @@ class ProformaInvoiceResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('proforma_invoice_no')->label('Proforma No'),
                 Tables\Columns\TextColumn::make('customer.name')->label('Customer'),
                 Tables\Columns\TextColumn::make('amount')->money('INR'),
             ])
@@ -218,7 +207,13 @@ class ProformaInvoiceResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('invoices')
+                    ->label('Download PDF')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->url(fn ($record) => route('proforma.download', $record->id))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

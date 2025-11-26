@@ -55,16 +55,19 @@ class InvoiceResource extends Resource
                             ->label('Account No')
                             ->default('1147535073')
                             ->disabled()
+                            ->dehydrated(true)
                             ->required(),
                         Forms\Components\TextInput::make('bank_details.ifsc')
                             ->label('IFSC')
                             ->default('KKBK0000841')
                             ->disabled()
+                            ->dehydrated(true)
                             ->required(),
                         Forms\Components\TextInput::make('bank_details.branch')
                             ->label('Branch')
                             ->default('Vadodara - Race Course Circle')
                             ->disabled()
+                            ->dehydrated(true)
                             ->required(),
                 ]),
 
@@ -180,8 +183,8 @@ class InvoiceResource extends Resource
     // GRAND TOTAL (for live UI update)
     public static function calculateGrandTotal($set, $get): void
     {
-        $subtotal = $get('subtotal') ?? 0;
-        $advance  = $get('advancePayment') ?? 0;
+        $subtotal = floatval($get('subtotal') ?: 0);
+        $advance = floatval($get('advancePayment') ?: 0);
 
         $gstType = $get('gst_type');
 

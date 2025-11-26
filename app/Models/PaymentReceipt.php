@@ -9,6 +9,8 @@ class PaymentReceipt extends Model
     protected $fillable = [
         'receipt_no',
         'customer',
+        'gst_type',
+        'gst_rate',
         'payments',
         'amount',
     ];
@@ -16,6 +18,7 @@ class PaymentReceipt extends Model
     protected $casts = [
         'customer' => 'array',
         'payments' => 'array',
+        'gst_rate' => 'array',
         'amount'   => 'float',
     ];
 

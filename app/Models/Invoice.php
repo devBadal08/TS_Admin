@@ -131,23 +131,4 @@ class Invoice extends Model
 
         return 'TS/INV' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
     }
-
-    public static function generateNextProformaNumber(): string
-    {
-        $monthYear = now()->format('m-Y');
-
-        $lastInvoice = self::where('invoice_no', 'like', "TS/PI%/$monthYear")
-            ->latest('id')
-            ->first();
-
-        if ($lastInvoice) {
-            preg_match('/TS\/PI(\d+)\/' . $monthYear . '/', $lastInvoice->invoice_no, $matches);
-            $lastNumber = isset($matches[1]) ? (int) $matches[1] : 0;
-            $nextNumber = $lastNumber + 1;
-        } else {
-            $nextNumber = 1;
-        }
-
-        return 'TS/PI' . str_pad($nextNumber, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
-    }
 }
