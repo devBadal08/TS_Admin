@@ -39,7 +39,7 @@ class Invoice extends Model
     protected static function booted()
     {
         static::creating(function ($invoice) {
-            if ($invoice->invoice_type === 'invoice' && empty($invoice->invoice_no)) {
+            if (empty($invoice->invoice_no)) {
                 $invoice->invoice_no = self::generateNextInvoiceNumber();
             }
 
@@ -51,20 +51,6 @@ class Invoice extends Model
                 'email'   => 'info@techstrota.com',
             ];
 
-            /* ========== INVOICE NUMBER ========== */
-            $year = date('Y');
-
-            $lastInvoice = self::whereYear('created_at', $year)
-                ->latest()
-                ->first();
-
-            $lastNumber = $lastInvoice
-                ? (int) explode('/', $lastInvoice->invoice_no)[1]
-                : 0;
-
-            $next = $lastNumber + 1;
-
-            $invoice->invoice_no = 'TS/' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $year;
             $invoice->invoice_date = now();
 
             // If NO GST selected, save empty gst_rate

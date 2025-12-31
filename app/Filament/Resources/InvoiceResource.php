@@ -23,8 +23,7 @@ class InvoiceResource extends Resource
         return $form->schema([
 
             /* ========== INVOICE NUMBER ========== */
-            Forms\Components\Hidden::make('invoice_no')
-                ->default(fn () => Invoice::generateNextInvoiceNumber()),
+            Forms\Components\Hidden::make('invoice_no'),
 
             Forms\Components\Hidden::make('invoice_type')
                 ->default('invoice'),

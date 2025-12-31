@@ -223,7 +223,7 @@
 
         <div class="box">
             <strong>To:</strong> {{ $invoice->customer['name'] ?? '-' }}<br>
-            <strong>Mobile No:</strong> {{ $invoice->customer['mobile'] ?? '-' }}
+            <strong>Address:</strong> {{ $invoice->customer['address'] ?? '-' }}
         </div>
 
         <div class="box box-right">
