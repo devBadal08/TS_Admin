@@ -322,7 +322,7 @@
                         <b>Advance Receive:</b> ₹ {{ number_format($invoice->advancePayment ?? 0,2) }} <br>
                         <b>Balance Payable:</b>
                         <span style="color:red">
-                            ₹ {{ number_format($invoice->amount - ($invoice->advancePayment ?? 0),2) }}
+                            ₹ {{ number_format($invoice->amount, 2) }}
                         </span>
                     </td>
 
