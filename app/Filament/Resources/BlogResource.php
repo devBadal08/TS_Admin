@@ -22,7 +22,9 @@ use Illuminate\Database\Eloquent\Builder;
 class BlogResource extends Resource
 {
     protected static ?string $model = Blog::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-pencil-square';
+    protected static ?string $navigationGroup = 'Website Management';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -80,11 +82,6 @@ class BlogResource extends Resource
                 TextColumn::make('slug')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('paragraph')
-                    ->label('Description')
-                    ->limit(50),
-                TextColumn::make('tags')
-                    ->formatStateUsing(fn($state) => is_array($state) ? implode(', ', $state) : $state),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

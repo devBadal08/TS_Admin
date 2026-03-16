@@ -78,7 +78,7 @@ class InvoiceResource extends Resource
                     'no_gst' => 'No GST',
                 ])
                 ->required()
-                ->reactive()
+                ->live(onBlur: true)
                 ->columnSpanFull(),
 
             /* ===== GST RATE (JSON) ===== */
@@ -99,18 +99,23 @@ class InvoiceResource extends Resource
                 ->label('Invoice Items')
                 ->required()
                 ->schema([
-                    Forms\Components\TextInput::make('description'),
+                    Forms\Components\TextInput::make('description')
+                        ->live(onBlur: true),
 
                     Forms\Components\TextInput::make('qty')
                         ->numeric()
                         ->default(1)
-                        ->reactive(),
+                        ->minValue(1)
+                        ->required()
+                        ->live(onBlur: true),
 
                     Forms\Components\TextInput::make('rate')
                         ->numeric()
-                        ->reactive(),
+                        ->minValue(0)
+                        ->required()
+                        ->live(onBlur: true),
                 ])
-                ->reactive()
+                ->live(onBlur: true)
                 ->afterStateUpdated(fn ($set, $get) => self::calculateSubTotal($set, $get))
                 ->columns(3)
                 ->columnSpanFull(),
@@ -125,7 +130,7 @@ class InvoiceResource extends Resource
             Forms\Components\TextInput::make('advancePayment')
                 ->label('Advance Payment')
                 ->numeric()
-                ->reactive()
+                ->live(onBlur: true)
                 ->required()
                 ->columnSpanFull()
                 ->afterStateUpdated(fn ($set, $get) => self::calculateGrandTotal($set, $get)),
@@ -139,20 +144,12 @@ class InvoiceResource extends Resource
                 ->columnSpanFull()
                 ->required(),
 
-            Forms\Components\TextInput::make('total_paid')
-                ->label('Total Paid')
-                ->disabled()
-                ->reactive(),
-
-            Forms\Components\TextInput::make('remaining_amount')
-                ->label('Final Due Amount')
-                ->disabled(),
-
             /* ========== TERMS & CONDITIONS ========== */
             Forms\Components\Textarea::make('terms')
                 ->label('Terms & Conditions')
                 ->rows(3)
                 ->placeholder('Enter payment terms, conditions, etc.')
+                ->required()
                 ->columnSpanFull(),
 
             /* ========== DECLARATION ========== */
@@ -160,6 +157,7 @@ class InvoiceResource extends Resource
                 ->label('Declaration')
                 ->rows(3)
                 ->placeholder('Enter your declaration statement')
+                ->required()
                 ->columnSpanFull(),
         ]);
     }
@@ -170,7 +168,10 @@ class InvoiceResource extends Resource
         $items = $get('items') ?? [];
 
         $subtotal = collect($items)->sum(function ($item) {
-            return ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
+            $qty = floatval($item['qty'] ?? 0);
+            $rate = floatval($item['rate'] ?? 0);
+
+            return $qty * $rate;
         });
 
         // save into subtotal (NOT amount)
@@ -188,7 +189,7 @@ class InvoiceResource extends Resource
         $gstType = $get('gst_type');
 
         if ($gstType === 'no_gst') {
-            $total = $subtotal - $advance;
+            $total = $subtotal;
         } elseif ($gstType === 'cgst_sgst') {
             $cgstRate = $get('gst_rate.cgst') ?? 0;
             $sgstRate = $get('gst_rate.sgst') ?? 0;
@@ -196,12 +197,12 @@ class InvoiceResource extends Resource
             $cgst = ($subtotal * $cgstRate) / 100;
             $sgst = ($subtotal * $sgstRate) / 100;
 
-            $total = $subtotal + $cgst + $sgst - $advance;
+            $total = $subtotal + $cgst + $sgst;
         } else { // igst
             $igstRate = $get('gst_rate.igst') ?? 0;
             $igst = ($subtotal * $igstRate) / 100;
 
-            $total = $subtotal + $igst - $advance;
+            $total = $subtotal + $igst;
         }
 
         $set('amount', round($total, 2));

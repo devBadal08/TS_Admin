@@ -17,7 +17,7 @@ class ProformaInvoiceResource extends Resource
 {
     protected static ?string $model = ProformaInvoice::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
     protected static ?string $navigationLabel = 'Proforma Invoices';
     protected static ?string $navigationGroup = 'Invoices Management';
     protected static ?int $navigationSort = 1;

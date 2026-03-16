@@ -320,9 +320,13 @@
 
                         <b>Invoice Amount:</b> ₹ {{ number_format($invoice->amount,2) }} <br>
                         <b>Advance Receive:</b> ₹ {{ number_format($invoice->advancePayment ?? 0,2) }} <br>
+                        @php
+                            $balance = $invoice->amount - ($invoice->advancePayment ?? 0);
+                        @endphp
+
                         <b>Balance Payable:</b>
                         <span style="color:red">
-                            ₹ {{ number_format($invoice->amount, 2) }}
+                            ₹ {{ number_format($balance, 2) }}
                         </span>
                     </td>
 
@@ -364,7 +368,11 @@
 
 <!-- FOOTER BAR -->
 <div class="footer">
-    Email: info@techstrota.com | Call Us: +91 90334 76660 | techstrota.com
+    Email: info@techstrota.com |
+    Call Us: +91 90334 76660 |
+    <a href="https://techstrota.com" style="color:#000; text-decoration:none;">
+        techstrota.com
+    </a>
 </div>
 
 </body>

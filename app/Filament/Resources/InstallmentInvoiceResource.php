@@ -17,7 +17,7 @@ class InstallmentInvoiceResource extends Resource
 {
     protected static ?string $model = PaymentReceipt::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Payment Receipts';
     protected static ?string $navigationGroup = 'Invoices Management';
     protected static ?int $navigationSort = 2;

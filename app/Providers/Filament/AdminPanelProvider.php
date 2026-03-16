@@ -28,6 +28,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->favicon(asset('images/favicon.png'))
+            ->brandLogo(asset('images/logo.png'))
+            ->brandLogoHeight('4rem')
             ->brandname('Techstrota Admin')
             ->colors([
                 'primary' => Color::Amber,
@@ -41,6 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
+                \App\Filament\Widgets\AdminStats::class,
             ])
             ->middleware([
                 EncryptCookies::class,

@@ -18,9 +18,11 @@ class ContactResource extends Resource
     protected static ?string $model = Contact::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-envelope';
+    protected static ?string $navigationGroup = 'Website Management';
     protected static ?string $navigationLabel = 'Contacts';
     protected static ?string $pluralLabel = 'Contacts';
     protected static ?string $slug = 'contacts';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -39,7 +41,7 @@ class ContactResource extends Resource
             ->columns([
                 TextColumn::make('name')->sortable()->searchable(),
                 TextColumn::make('email')->sortable()->searchable(),
-                TextColumn::make('mobile_number')->sortable()->searchable(),
+                TextColumn::make('mobileno')->sortable()->searchable(),
                 TextColumn::make('subject')->sortable()->searchable(),
                 TextColumn::make('message')->limit(30),
             ])

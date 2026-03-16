@@ -364,7 +364,11 @@
 
 <!-- FOOTER BAR -->
 <div class="footer">
-    Email: info@techstrota.com | Call Us: +91 90334 76660 | techstrota.com
+    Email: info@techstrota.com |
+    Call Us: +91 90334 76660 |
+    <a href="https://techstrota.com" style="color:#000; text-decoration:none;">
+        techstrota.com
+    </a>
 </div>
 
 </body>

@@ -69,7 +69,7 @@ class Invoice extends Model
             $advance = $invoice->advancePayment ?? 0;
 
             if ($invoice->gst_type === 'no_gst') {
-                $total = $subtotal - $advance;
+                $total = $subtotal;
             }
 
             elseif ($invoice->gst_type === 'cgst_sgst') {
@@ -79,14 +79,14 @@ class Invoice extends Model
                 $cgst = ($subtotal * $cgstRate) / 100;
                 $sgst = ($subtotal * $sgstRate) / 100;
 
-                $total = $subtotal + $cgst + $sgst - $advance;
+                $total = $subtotal + $cgst + $sgst;
             }
 
             else { // igst
                 $igstRate = $invoice->gst_rate['igst'] ?? 0;
                 $igst = ($subtotal * $igstRate) / 100;
 
-                $total = $subtotal + $igst - $advance;
+                $total = $subtotal + $igst;
             }
 
             $invoice->amount = round($total, 2);
@@ -101,7 +101,6 @@ class Invoice extends Model
 
         // Get last invoice from same month & year
         $lastInvoice = self::whereYear('created_at', $year)
-            ->whereMonth('created_at', $month)
             ->orderBy('id', 'desc')
             ->first();
 

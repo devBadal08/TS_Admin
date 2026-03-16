@@ -54,23 +54,23 @@ class ProformaInvoice extends Model
 
     public static function generateNextProformaNumber(): string
     {
-        $monthYear = date('m-Y');
+        $year = date('Y');
 
-        $numbers = self::whereNotNull('proforma_invoice_no')
-            ->pluck('proforma_invoice_no')
-            ->map(function ($item) {
+        // Get last proforma invoice from the same year
+        $lastInvoice = self::whereYear('created_at', $year)
+            ->orderBy('id', 'desc')
+            ->first();
 
-                if (preg_match('/TS\/PI(\d+)\//', $item, $matches)) {
-                    return (int) $matches[1];
-                }
+        if ($lastInvoice) {
+            preg_match('/PI(\d+)/', $lastInvoice->proforma_invoice_no, $matches);
+            $lastNumber = isset($matches[1]) ? (int) $matches[1] : 0;
+        } else {
+            $lastNumber = 0;
+        }
 
-                return 0;
-            });
-
-        $lastNumber = $numbers->max() ?? 0;
         $next = $lastNumber + 1;
 
-        return 'TS/PI' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
+        return 'TS/PI' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $year;
     }
 
     /* For showing in create page (Filament placeholder) */

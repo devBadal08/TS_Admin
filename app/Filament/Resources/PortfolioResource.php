@@ -21,7 +21,9 @@ use Filament\Tables\Actions\DeleteBulkAction;
 class PortfolioResource extends Resource
 {
     protected static ?string $model = Portfolio::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-briefcase';
+    protected static ?string $navigationGroup = 'Website Management';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {

@@ -36,24 +36,22 @@ class PaymentReceipt extends Model
 
     public static function generateNextReceiptNumber(): string
     {
-        $monthYear = date('m-Y');
+        $year = date('Y');
 
-        // Collect all existing receipt numbers
-        $numbers = self::whereNotNull('payments')->get()
-            ->pluck('payments')
-            ->flatten(1)
-            ->pluck('receipt_no')
-            ->filter()
-            ->map(function ($item) {
-                if (preg_match('/TS\/PR(\d+)\//', $item, $matches)) {
-                    return (int) $matches[1];
-                }
-                return 0;
-            });
+        // Get last receipt from the same year
+        $lastReceipt = self::whereYear('created_at', $year)
+            ->orderBy('id', 'desc')
+            ->first();
 
-        $lastNumber = $numbers->max() ?? 0;
+        if ($lastReceipt) {
+            preg_match('/PR(\d+)/', $lastReceipt->receipt_no, $matches);
+            $lastNumber = isset($matches[1]) ? (int) $matches[1] : 0;
+        } else {
+            $lastNumber = 0;
+        }
+
         $next = $lastNumber + 1;
 
-        return 'TS/PR' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
+        return 'TS/PR' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $year;
     }
 }

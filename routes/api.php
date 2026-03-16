@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Portfolio;
 use App\Models\Blog; 
 use App\Models\Contact;
+use App\Models\Client;
+use App\Models\Gallery;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -17,11 +19,45 @@ Route::middleware('auth:sanctum')->get('/admin', function (Request $request) {
 Route::get('/portfolios', function () {
     return Portfolio::all();
 });
+
+Route::get('/clients', function () {
+    return Client::all()->map(function ($client) {
+        return [
+            'id' => $client->id,
+            'logo' => $client->logo ? asset('storage/' . $client->logo) : null,
+        ];
+    });
+});
+
+Route::get('/galleries', function () {
+    return Gallery::all()->map(function ($gallery) {
+        return [
+            'id' => $gallery->id,
+            'title' => $gallery->title,
+            'main_image' => $gallery->main_image
+                ? asset('storage/' . $gallery->main_image)
+                : null,
+        ];
+    });
+});
+
+Route::get('/galleries/{id}', function ($id) {
+
+    $gallery = Gallery::findOrFail($id);
+
+    return [
+        'id' => $gallery->id,
+        'title' => $gallery->title,
+        'description' => $gallery->description,
+        'main_image' => asset('storage/' . $gallery->main_image),
+        'gallery_images' => collect($gallery->gallery_images)->map(function ($img) {
+            return asset('storage/' . $img);
+        }),
+    ];
+});
+
 Route::post('/contact', function (Request $request) {
     $data = $request->all(); // get all input
-
-    // Log the request
-    \Log::info('Contact Form Data:', $data);
 
     // Validate
     $validated = validator($data, [
