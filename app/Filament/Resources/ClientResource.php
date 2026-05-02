@@ -46,6 +46,7 @@ class ClientResource extends Resource
                     ])
                     ->size(80),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

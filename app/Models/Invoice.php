@@ -46,7 +46,7 @@ class Invoice extends Model
             /* ========== SELLER AUTO ========== */
             $invoice->seller = [
                 'name'    => 'TECHSTROTA',
-                'address' => '156, 1st Floor, C Tower, K10 Atlantis, Sarabhai Campus, Vadodara - 390007',
+                'address' => '503, Sterling Centre, R C Dutt Road, Alkapuri, Vadodara - 390007',
                 'phone'   => '+91-81288 40055',
                 'email'   => 'info@techstrota.com',
             ];

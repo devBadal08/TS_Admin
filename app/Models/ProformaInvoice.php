@@ -44,17 +44,23 @@ class ProformaInvoice extends Model
             /* ========== SELLER AUTO ========== */
             $invoice->seller = [
                 'name'    => 'TECHSTROTA',
-                'address' => '156, 1st Floor, C Tower, K10 Atlantis, Sarabhai Campus, Vadodara - 390007',
+                'address' => '503, Sterling Centre, R C Dutt Road, Alkapuri, Vadodara - 390007',
                 'phone'   => '+91-81288 40055',
                 'email'   => 'info@techstrota.com',
             ];
 
+            // If NO GST selected, save empty gst_rate
+            if ($invoice->gst_type === 'no_gst') {
+                $invoice->gst_rate = json_encode([]);
+            }
         });
     }
 
     public static function generateNextProformaNumber(): string
     {
-        $year = date('Y');
+        $month = date('m');   // 11
+        $year  = date('Y');   // 2025
+        $monthYear = $month . '-' . $year;
 
         // Get last proforma invoice from the same year
         $lastInvoice = self::whereYear('created_at', $year)
@@ -70,7 +76,7 @@ class ProformaInvoice extends Model
 
         $next = $lastNumber + 1;
 
-        return 'TS/PI' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $year;
+        return 'TS/PI' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
     }
 
     /* For showing in create page (Filament placeholder) */

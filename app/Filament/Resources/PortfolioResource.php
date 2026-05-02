@@ -34,6 +34,7 @@ class PortfolioResource extends Resource
                 ->required(),
             FileUpload::make('image')
                 ->image()
+                ->directory('portfolio-images')
                 ->label('Main Image')
                 ->required(),
             // Gallery section: Repeater with image and description per image
@@ -43,7 +44,7 @@ class PortfolioResource extends Resource
                     FileUpload::make('url')
                         ->label('Image')
                         ->image()
-                        ->directory('gallery')
+                        ->directory('portfolio-gallery')
                         ->required(),
                     TextInput::make('desc')
                         ->label('Description')
@@ -70,6 +71,7 @@ class PortfolioResource extends Resource
                     ->label('Project URL')
                     ->url(fn ($record) => $record->url, true),
             ])
+            ->defaultSort('id', 'desc')
             ->actions([
                 EditAction::make(),
                 DeleteAction::make(), // 👈 Add this line for delete button

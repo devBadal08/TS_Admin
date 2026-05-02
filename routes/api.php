@@ -17,11 +17,11 @@ Route::middleware('auth:sanctum')->get('/admin', function (Request $request) {
 })->name('admin.dashboard');
 
 Route::get('/portfolios', function () {
-    return Portfolio::all();
+    return Portfolio::orderBy('created_at', 'desc')->get();
 });
 
 Route::get('/clients', function () {
-    return Client::all()->map(function ($client) {
+    return Client::orderBy('created_at','desc')->get()->map(function ($client) {
         return [
             'id' => $client->id,
             'logo' => $client->logo ? asset('storage/' . $client->logo) : null,
@@ -30,7 +30,7 @@ Route::get('/clients', function () {
 });
 
 Route::get('/galleries', function () {
-    return Gallery::all()->map(function ($gallery) {
+    return Gallery::orderBy('created_at', 'desc')->get()->map(function ($gallery) {
         return [
             'id' => $gallery->id,
             'title' => $gallery->title,

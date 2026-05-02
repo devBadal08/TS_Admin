@@ -29,7 +29,7 @@ class ContactResource extends Resource
         return $form->schema([
             TextInput::make('name')->required()->maxLength(100),
             TextInput::make('email')->email()->required()->maxLength(100),
-            TextInput::make('mobile_number')->tel()->required()->maxLength(15),
+            TextInput::make('mobileno')->tel()->required()->maxLength(15),
             TextInput::make('subject')->required()->maxLength(150),
             Textarea::make('message')->maxLength(500),
         ]);
@@ -45,6 +45,7 @@ class ContactResource extends Resource
                 TextColumn::make('subject')->sortable()->searchable(),
                 TextColumn::make('message')->limit(30),
             ])
+            ->defaultSort('created_at', 'desc')
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

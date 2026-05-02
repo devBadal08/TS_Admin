@@ -20,13 +20,28 @@
             color: #f59e0b;
         }
 
+        .table-box {
+            border: 1px solid #1e3a8a;
+            border-radius: 18px;
+            overflow: hidden; /* IMPORTANT */
+        }
+
         table {
             width:100%;
             border-collapse: separate;
             border-spacing: 0;
-            margin-top: 10px;
+        }
+
+        .rounded-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .header-box {
+            border: 1px solid #1e3a8a;
             border-radius: 18px;
-            border: 1px solid #e6efff;
+            overflow: hidden;
         }
 
         th { background: #f2f7ff; padding: 10px; }
@@ -52,7 +67,7 @@
 
 <div class="wrap">
 
-    <table width="100%">
+    <table width="100%" class="header-box">
         <tr>
             <td width="30%">
                 <img src="{{ public_path('images/logo.png') }}" height="40">
@@ -64,14 +79,14 @@
 
             <td width="30%" class="right">
                 <div class="company-name">TECHSTROTA</div>
-                156, 1st Floor, C Tower, K10 Atlantis, Sarabhai Campus, Vadodara - 390007
+                503, Sterling Centre, R C Dutt Road, Alkapuri, Vadodara - 390007
             </td>
         </tr>
     </table>
 
     <br>
 
-    <table>
+    <table width="100%" style="padding:10px" class="header-box">
         <tr>
             <td>
                 <strong>Customer:</strong> {{ $receipt->customer['name'] ?? '' }} <br>
@@ -87,20 +102,22 @@
 
     <br>
 
-    <table>
-        <thead>
-        <tr>
-            <th>Description</th>
-            <th class="right">Amount</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>Payment Received ({{ $payment['method'] ?? 'N/A' }})</td>
-            <td class="right">₹ {{ number_format($payment['amount'] ?? 0, 2) }}</td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="table-box">
+        <table class="rounded-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Payment Received ({{ $payment['method'] ?? 'N/A' }})</td>
+                    <td class="right">₹ {{ number_format($payment['amount'] ?? 0, 2) }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <br>
 

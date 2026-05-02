@@ -36,7 +36,9 @@ class PaymentReceipt extends Model
 
     public static function generateNextReceiptNumber(): string
     {
-        $year = date('Y');
+        $month = date('m');   // 11
+        $year  = date('Y');   // 2025
+        $monthYear = $month . '-' . $year;
 
         // Get last receipt from the same year
         $lastReceipt = self::whereYear('created_at', $year)
@@ -52,6 +54,6 @@ class PaymentReceipt extends Model
 
         $next = $lastNumber + 1;
 
-        return 'TS/PR' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $year;
+        return 'TS/PR' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
     }
 }

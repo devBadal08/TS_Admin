@@ -51,7 +51,7 @@
             border-radius: 20px;
             padding: 12px 16px;
             font-size: 13px;
-            border: 1px solid #e2edff;
+            border: 1px solid #1e3a8a;
         }
 
         strong {
@@ -66,7 +66,7 @@
             margin-top: 10px;
             border-radius: 18px;
             overflow: hidden;
-            border: 1px solid #e6efff;
+            border: 1px solid #1e3a8a;
         }
 
         th {
@@ -111,9 +111,19 @@
         .bottom-box {
             background: #f7fbff;
             border-radius: 20px;
-            padding: 16px;
-            border: 1px solid #e2eeff;
+            padding: 10px;
+            border: 1px solid #1e3a8a;
             font-size: 13px;
+            margin-top: 25px;
+        }
+
+        .bottom-box table {
+            border: none;
+            border-collapse: collapse;
+        }
+
+        .bottom-box td {
+            border: none;
         }
 
         /* WORDS */
@@ -310,8 +320,7 @@
     </table>
 
     <!-- PAYMENT / BANK -->
-    <div class="bottom-boxes">
-        <div class="bottom-box" style="width:100%">
+    <div class="bottom-box">
             <table width="100%">
                 <tr>
                     <!-- PAYMENT -->
@@ -331,7 +340,7 @@
                     </td>
 
                     <!-- BANK -->
-                    <td width="50%" valign="top">
+                    <td width="40%" valign="top">
                         <strong style="color:#1d4ed8; font-size:15px;">Bank Details</strong><br><br>
 
                         <b>Account No:</b> {{ $invoice->bank_details['account'] ?? '' }} <br>
@@ -340,7 +349,6 @@
                     </td>
                 </tr>
             </table>
-        </div>
     </div>
 
     <!-- WORDS -->

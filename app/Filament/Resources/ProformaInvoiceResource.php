@@ -203,6 +203,7 @@ class ProformaInvoiceResource extends Resource
                 Tables\Columns\TextColumn::make('customer.name')->label('Customer'),
                 Tables\Columns\TextColumn::make('amount')->money('INR'),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
