@@ -18,6 +18,11 @@ class AdminStats extends BaseWidget
 {
     protected int|string|array $columnSpan = 'full';
 
+    protected ?string $heading = 'TechStrota Insights';
+
+    protected ?string $description =
+        'Monitor website activity, business growth and customer interactions.';
+
     protected function getColumns(): int
     {
         return 3;

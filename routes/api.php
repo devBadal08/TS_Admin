@@ -7,6 +7,22 @@ use App\Models\Blog;
 use App\Models\Contact;
 use App\Models\Client;
 use App\Models\Gallery;
+use App\Models\PageVisit;
+
+Route::post('/track-page-visit', function (Request $request) {
+
+    PageVisit::create([
+        'page' => $request->page,
+        'session_id' => $request->session_id,
+        'ip_address' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+        'last_active' => now(),
+    ]);
+
+    return response()->json([
+        'success' => true
+    ]);
+}); 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

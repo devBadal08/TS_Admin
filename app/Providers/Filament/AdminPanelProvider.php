@@ -44,6 +44,9 @@ class AdminPanelProvider extends PanelProvider
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
                 \App\Filament\Widgets\AdminStats::class,
+                \App\Filament\Widgets\AnalyticsStats::class,
+                \App\Filament\Widgets\PopularPagesTable::class,
+                \App\Filament\Widgets\LiveActivePagesTable::class,
             ])
             ->middleware([
                 EncryptCookies::class,
