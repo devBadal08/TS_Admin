@@ -43,6 +43,11 @@ class GalleryResource extends Resource
                 Textarea::make('description')
                     ->rows(4),
 
+                Textarea::make('keywords')
+                    ->label('SEO Keywords')
+                    ->rows(3)
+                    ->helperText('Separate keywords with commas'),
+
                 FileUpload::make('gallery_images')
                     ->label('Gallery Images')
                     ->multiple()

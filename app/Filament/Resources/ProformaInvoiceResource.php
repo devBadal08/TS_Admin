@@ -65,6 +65,12 @@ class ProformaInvoiceResource extends Resource
                                 ->disabled()
                                 ->dehydrated(true)
                                 ->required(),
+                            Forms\Components\TextInput::make('bank_details.gstin')
+                                ->label('GSTIN')
+                                ->default('24AAVFT0941Q1ZF')
+                                ->disabled()
+                                ->dehydrated(true)
+                                ->required(),
                     ]),
 
                 /* ========== GST TYPE ========== */

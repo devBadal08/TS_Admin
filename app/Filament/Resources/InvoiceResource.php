@@ -45,6 +45,17 @@ class InvoiceResource extends Resource
                     Forms\Components\TextInput::make('customer.name')->required(),
                     Forms\Components\TextInput::make('customer.mobile')->required(),
                     Forms\Components\Textarea::make('customer.address')->required(),
+                    Forms\Components\TextInput::make('customer.gstno')
+                        ->label('GST No')
+                        ->maxLength(15),
+                    Forms\Components\TextInput::make('customer.state_name')
+                        ->label('State Name')
+                        ->required(),
+
+                    Forms\Components\TextInput::make('customer.state_code')
+                        ->label('State Code')
+                        ->numeric()
+                        ->required(),
                 ]),
 
             /* ========== BANK DETAILS (JSON) ========== */
@@ -65,6 +76,12 @@ class InvoiceResource extends Resource
                         Forms\Components\TextInput::make('bank_details.branch')
                             ->label('Branch')
                             ->default('Vadodara - Race Course Circle')
+                            ->disabled()
+                            ->dehydrated(true)
+                            ->required(),
+                        Forms\Components\TextInput::make('bank_details.gstin')
+                            ->label('GSTIN')
+                            ->default('24AAVFT0941Q1ZF')
                             ->disabled()
                             ->dehydrated(true)
                             ->required(),
@@ -100,7 +117,12 @@ class InvoiceResource extends Resource
                 ->required()
                 ->schema([
                     Forms\Components\TextInput::make('description')
-                        ->live(onBlur: true),
+                        ->label('Description')
+                        ->required(),
+
+                    Forms\Components\TextInput::make('hsn_sac')
+                        ->label('HSN / SAC ')
+                        ->required(),
 
                     Forms\Components\TextInput::make('qty')
                         ->numeric()
@@ -115,9 +137,7 @@ class InvoiceResource extends Resource
                         ->required()
                         ->live(onBlur: true),
                 ])
-                ->live(onBlur: true)
-                ->afterStateUpdated(fn ($set, $get) => self::calculateSubTotal($set, $get))
-                ->columns(3)
+                ->columns(4)
                 ->columnSpanFull(),
 
             /* ========== SUBTOTAL & TOTAL AMOUNT ========== */
@@ -126,13 +146,20 @@ class InvoiceResource extends Resource
                 ->disabled()
                 ->columnSpanFull(),
 
+            /* ========== DISCOUNT ========== */
+            Forms\Components\TextInput::make('discount')
+                ->label('Discount (%)')
+                ->numeric()
+                ->live(onBlur: true)
+                ->columnSpan(1)
+                ->afterStateUpdated(fn ($set, $get) => self::calculateGrandTotal($set, $get)),
+
             /* ========== ADVANCE PAYMENT ========== */
             Forms\Components\TextInput::make('advancePayment')
                 ->label('Advance Payment')
                 ->numeric()
                 ->live(onBlur: true)
-                ->required()
-                ->columnSpanFull()
+                ->columnSpan(1)
                 ->afterStateUpdated(fn ($set, $get) => self::calculateGrandTotal($set, $get)),
 
             /* ========== TOTAL AMOUNT ========== */
@@ -184,7 +211,8 @@ class InvoiceResource extends Resource
     public static function calculateGrandTotal($set, $get): void
     {
         $subtotal = floatval($get('subtotal') ?: 0);
-        $advance = floatval($get('advancePayment') ?: 0);
+        $discount = floatval($get('discount') ?: 0);
+        //$advance = floatval($get('advancePayment') ?: 0);
 
         $gstType = $get('gst_type');
 
@@ -198,14 +226,21 @@ class InvoiceResource extends Resource
             $sgst = ($subtotal * $sgstRate) / 100;
 
             $total = $subtotal + $cgst + $sgst;
-        } else { // igst
+        } else {
             $igstRate = $get('gst_rate.igst') ?? 0;
             $igst = ($subtotal * $igstRate) / 100;
 
             $total = $subtotal + $igst;
         }
 
-        $set('amount', round($total, 2));
+        // Apply Discount
+        $discountAmount = ($total * $discount) / 100;
+        $total = $total - $discountAmount;
+
+        // Apply Advance Payment (optional)
+        //$total = $total - $advance;
+
+        $set('amount', round(max($total, 0), 2));
     }
 
     public static function table(Table $table): Table
@@ -224,6 +259,7 @@ class InvoiceResource extends Resource
                     ->color('success')
                     ->url(fn (Invoice $record) => route('invoice.pdf', $record))
                     ->openUrlInNewTab(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->defaultSort('id','desc')
             ->bulkActions([

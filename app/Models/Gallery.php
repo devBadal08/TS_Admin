@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class Gallery extends Model
 {
-    protected $fillable = ['title', 'main_image', 'description', 'gallery_images'];
+    protected $fillable = ['title', 'main_image', 'description', 'gallery_images', 'keywords'];
 
     protected $casts = [
         'gallery_images' => 'array',

@@ -23,6 +23,9 @@ class Invoice extends Model
         'declaration',
         'signatureName',
         'advancePayment',
+        'discount',
+        'state_name',
+        'state_code'
     ];
 
     protected $casts = [
@@ -34,11 +37,12 @@ class Invoice extends Model
         'bank_details' => 'array',
         'invoice_date' => 'date',
         'advancePayment' => 'float',
+        'discount' => 'float',
     ];
 
     protected static function booted()
     {
-        static::creating(function ($invoice) {
+        static::saving(function ($invoice) {
             if (empty($invoice->invoice_no)) {
                 $invoice->invoice_no = self::generateNextInvoiceNumber();
             }
@@ -49,13 +53,12 @@ class Invoice extends Model
                 'address' => '503, Sterling Centre, R C Dutt Road, Alkapuri, Vadodara - 390007',
                 'phone'   => '+91-81288 40055',
                 'email'   => 'info@techstrota.com',
+                'pan'     => 'AAVFT0941Q',
             ];
-
-            $invoice->invoice_date = now();
 
             // If NO GST selected, save empty gst_rate
             if ($invoice->gst_type === 'no_gst') {
-                $invoice->gst_rate = json_encode([]);
+                $invoice->gst_rate = [];
             }
 
             /* ========== CALCULATE TOTAL (AMOUNT) ========== */
@@ -67,11 +70,11 @@ class Invoice extends Model
             });
 
             $advance = $invoice->advancePayment ?? 0;
+            $discount = $invoice->discount ?? 0;
 
             if ($invoice->gst_type === 'no_gst') {
                 $total = $subtotal;
             }
-
             elseif ($invoice->gst_type === 'cgst_sgst') {
                 $cgstRate = $invoice->gst_rate['cgst'] ?? 0;
                 $sgstRate = $invoice->gst_rate['sgst'] ?? 0;
@@ -81,15 +84,18 @@ class Invoice extends Model
 
                 $total = $subtotal + $cgst + $sgst;
             }
-
-            else { // igst
+            else {
                 $igstRate = $invoice->gst_rate['igst'] ?? 0;
                 $igst = ($subtotal * $igstRate) / 100;
 
                 $total = $subtotal + $igst;
             }
 
-            $invoice->amount = round($total, 2);
+            // Discount %
+            $discountAmount = ($total * $discount) / 100;
+            $total -= $discountAmount;
+
+            $invoice->amount = round(max($total, 0), 2);
         });
     }
 

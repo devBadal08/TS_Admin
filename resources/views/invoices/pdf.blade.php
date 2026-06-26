@@ -1,4 +1,20 @@
-<!DOCTYPE html>
+@php
+    $amount = round($invoice->amount, 2);
+
+    $rupees = floor($amount);
+    $paise = round(($amount - $rupees) * 100);
+
+    $formatter = \NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT);
+
+    $words = ucwords($formatter->format($rupees)) . ' Indian Rupees';
+
+    if ($paise > 0) {
+        $words .= ' And ' . ucwords($formatter->format($paise)) . ' Paise';
+    }
+
+    $words .= ' Only';
+@endphp
+<!DOCTYPE html> 
 <html>
 <head>
     <meta charset="UTF-8">
@@ -6,381 +22,460 @@
 
     <style>
         @page {
-            margin-top: 10px;
-            margin-left: 10px;
-            margin-right: 10px;
-            margin-bottom: 20px; /* IMPORTANT – space for footer */
+            margin: 15px;
         }
 
         body {
             font-family: DejaVu Sans, Arial, sans-serif;
-            font-size: 14px;
+            font-size: 11px;
             margin: 0;
             padding: 0;
-            color: #222;
-        }
-
-        .wrap {
-            padding: 5px 12px 10px 12px;
-        }
-
-        
-
-        .company-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #f59e0b;
-        }
-
-        .divider {
-            border-top: 2px solid #e5f0ff;
-            margin: 5px 0 5px 0;
-        }
-
-        /* INFO BOXES */
-        .info-boxes {
-            display: table;
-            width: 100%;
-            border-spacing: 12px 0;
-            margin: 12px 0 10px 0;
-        }
-
-        .box {
-            display: table-cell;
-            background: #f4f9ff;
-            border-radius: 20px;
-            padding: 12px 16px;
-            font-size: 13px;
-            border: 1px solid #1e3a8a;
-        }
-
-        strong {
-            font-size: 15px;
-        }
-
-        /* TABLE */
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 10px;
-            border-radius: 18px;
-            overflow: hidden;
-            border: 1px solid #1e3a8a;
-        }
-
-        th {
-            background: #f2f7ff;
-            padding: 10px 12px;
-            color: #0f3f88;
-            font-size: 14px;
-            border-bottom: 1px solid #e2edff;
-        }
-
-        td {
-            padding: 10px 12px;
-            font-size: 13px;
-            border-bottom: 1px solid #f0f5ff;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .right {
-            text-align: right;
-        }
-
-        .totals td {
-            font-weight: bold;
-        }
-
-        .grand td {
-            background: #fff5ea;
-            color: #cc6a00;
-            font-size: 16px;
-        }
-
-        /* PAYMENT + BANK */
-        .bottom-boxes {
-            display: table;
-            width: 100%;
-            margin-top: 25px;
-        }
-
-        .bottom-box {
-            background: #f7fbff;
-            border-radius: 20px;
-            padding: 10px;
-            border: 1px solid #1e3a8a;
-            font-size: 13px;
-            margin-top: 25px;
-        }
-
-        .bottom-box table {
-            border: none;
-            border-collapse: collapse;
-        }
-
-        .bottom-box td {
-            border: none;
-        }
-
-        /* WORDS */
-        .words {
-            margin-top: 20px;
-            margin-bottom: 10px;
-            font-style: italic;
-        }
-
-        /* TERMS */
-        .terms {
-            margin-top: 20px;
-            font-size: 13px;
-        }
-
-        /* SIGNATURE */
-        .sign {
-            margin-top: 30px;
-            width: 240px;
-            padding: 12px;
-            border: 2px dashed #ff9f00;
-            border-radius: 16px;
-            color: #1a4fd8;
-            text-align: center;
-            margin-left: auto;
-            font-size: 13px;
-            background: #fffaf3;
-        }
-
-        /* FOOTER */
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #f59e0b;
             color: #000;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
+            line-height: 1.4;
         }
 
-        .header-card {
-            background: #ffffff;
-            padding: 10px 14px;
-            border-radius: 20px;
-            position: relative;
+        /* Top Bar Segment Outside/Above Main Frame Box */
+        .top-label-bar {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .top-label-bar td {
+            padding: 0;
             border: none;
         }
 
-        .header-card::after {
-            content: "";
-            position: absolute;
-            left: 25%;
-            right: 25%;
-            bottom: -3px;
-            height: 3px;
-            background: linear-gradient(90deg, #ff9f00, #ff7b00);
-            border-radius: 20px;
+        .invoice-type-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1b75bc;
+            letter-spacing: 1.5px;
+            text-align: center;
         }
 
-        .invoice-title {
-            font-size: 30px;
-            font-weight: 900;
-            color: #ff8c00;
-            letter-spacing: 3px;
+        .invoice-container {
+            border: 1px solid #1b75bc; /* Primary Logo Blue */
+            width: 100%;
+        }
+
+        /* Generic table resets for strict framing layout */
+        .grid-table {
+            width: 100%;
+            border-collapse: collapse;
             margin: 0;
+            padding: 0;
         }
 
-        .company-address {
+        .grid-table td, .grid-table th {
+            padding: 5px 8px;
+            vertical-align: top;
+            border: 1px solid #1b75bc; /* Balanced with primary blue grid lines */
+        }
+
+        .section-heading {
+            background-color: #f0f6fb; /* Soft Brand Blue Tint */
+            color: #1b75bc;
+            font-size: 10px;
+            text-align: center;
+            font-weight: bold;
+            padding: 4px !important;
+        }
+
+        /* Item Grid Elements */
+        .items-table th {
+            background-color: #ffffff;
+            color: #1b75bc;
+            text-align: center;
+            font-weight: bold;
             font-size: 11px;
+        }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+
+        /* Dynamic helper to build consistent heights for item rows */
+        .item-row td {
+            border-top: none;
+            border-bottom: none;
+            padding: 2px 8px !important;
+            line-height: 1.1;
+        }
+
+        .tax-row td {
+            border-top: none;
+            border-bottom: none;
+            padding: 50px 8px 2px 8px !important;
+        }
+
+        .tax-row2 td {
+            border-top: none;
+            border-bottom: none;
+            padding: 2px 8px 20px 8px !important;
+        }
+
+        .tax-payable-text {
+            font-weight: bold;
+            font-style: italic;
+            text-align: right;
+            padding-right: 15px !important;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            background-color: #f0f6fb;
+            color: #1b75bc;
+        }
+
+        /* Footer Conditions and terms block */
+        .terms-box {
+            font-size: 10px;
             line-height: 1.3;
+        }
+
+        .computer-generated-note {
+            font-size: 10px;
+            color: #555;
+            padding: 5px 8px;
+            font-weight: bold;
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
-<div class="wrap">
 
-    <!-- HEADER CARD -->
-    <div class="header-card">
-        <table width="100%">
-            <tr>
-                <!-- LEFT LOGO -->
-                <td width="30%" valign="middle">
-                    <img src="{{ public_path('images/logo.png') }}" height="40">
-                </td>
-
-                <!-- CENTER TITLE -->
-                <td width="40%" align="center" valign="middle">
-                    <div class="invoice-title">INVOICE</div>
-                </td>
-
-                <!-- RIGHT COMPANY INFO -->
-                <td width="30%" align="right" valign="middle">
-                    <div class="company-name">TECHSTROTA</div>
-                    <div class="company-address">
-                        {{ $invoice->seller['address'] ?? '' }}
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- INFO BOXES -->
-    <div class="info-boxes">
-
-        <div class="box">
-            <strong>To:</strong> {{ $invoice->customer['name'] ?? '-' }}<br>
-            <strong>Address:</strong> {{ $invoice->customer['address'] ?? '-' }}
-        </div>
-
-        <div class="box box-right">
-            <strong>Invoice No:</strong> {{ $invoice->invoice_no }}<br>
-            <strong>Date:</strong> {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('Y-m-d') }}
-        </div>
-
-    </div>
-
-    <!-- ITEMS TABLE -->
-    <table>
-        <thead>
+    <!-- TOPMOST META HEADER BLOCK (Outside Main Border Frame) -->
+    <table style="width:100%; border-collapse: collapse;">
         <tr>
-            <th>Description</th>
-            <th class="right">Qty</th>
-            <th class="right">Rate/Unit</th>
-            <th class="right">Amount</th>
+            <td class="invoice-type-title" style="text-align:center;">
+                INVOICE
+            </td>
         </tr>
+    </table>
+
+<div>
+
+    <!-- MAIN STRUCTURAL THREE-COLUMN BLOCK -->
+    <table class="grid-table">
+        <tr>
+            <!-- Column 1: Provider / Seller Details -->
+            <td width="38%" style="padding: 6px;">
+                <img src="{{ public_path('images/logo.png') }}" height="40" style="margin-bottom: 4px;"><br>
+                <strong style="font-size: 15px; color: #1b75bc;">TECHSTROTA</strong><br>
+                <span style="font-size: 10px; color: #444; line-height: 1.3;">
+                    {{ $invoice->seller['address'] ?? 'Plot No A 64, Road No 21, Wagle Indl Estate, Mumbai, Maharashtra - 400604' }}<br>
+                    <strong>GSTIN/UIN:</strong> {{ $invoice->seller['gstno'] ?? '24AAVFT0941Q1ZF' }}<br>
+                    <strong>State Name:</strong> {{ $invoice->seller['state_name'] ?? 'Gujarat' }}, <strong>Code :</strong> {{ $invoice->seller['state_code'] ?? '24' }}<br>
+                    <strong>Email:</strong> info@techstrota.com<br>
+                    <strong>Web</strong> : www.techstrota.com
+                </span>
+            </td>
+
+            <!-- Column 2: Consignee / Buyer Details -->
+            <td width="34%" style="padding: 0;">
+                <table class="grid-table" style="border: none;">
+                    <tr><td class="section-heading" style="border-top:none; border-left:none; border-right:none; text-align: left;">Buyer (Bill to)</td></tr>
+                    <tr>
+                        <td style="border: none; font-size: 10px; line-height: 1.4;">
+                            <strong>Name:</strong> {{ $invoice->customer['name'] ?? '-' }}<br>
+                            <strong>Address:</strong> {{ $invoice->customer['address'] ?? '-' }}<br>
+                            <strong>GSTIN/UIN:</strong> {{ $invoice->customer['gstno'] ?? '-' }}<br>
+                            <strong>State Name:</strong> {{ $invoice->customer['state_name'] ?? '-' }}<br>
+                            <strong>State Code:</strong> {{ $invoice->customer['state_code'] ?? '-' }}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+
+            <!-- Column 3: Invoice Processing Metadata metrics -->
+            <td width="28%" style="padding: 0;">
+                <table class="grid-table" style="border: none;">
+                    <tr>
+                        <td style="border-top:none; border-left:none; border-right:none; font-size: 10px;">
+                            <span style="color: #555;">Invoice No.</span><br>
+                            <strong>{{ $invoice->invoice_no }}</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-left:none; border-right:none; font-size: 10px;">
+                            <span style="color: #555;">Invoice Date</span><br>
+                            <strong>{{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-M-Y') }}</strong>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- MAIN LINE ITEMS GRID -->
+    <table class="grid-table items-table">
+        <thead>
+            <tr>
+                <th width="7%">Sr. No.</th>
+                <th width="48%">Description</th>
+                <th width="12%">HSN / SAC</th>
+                <th width="10%">Qty</th>
+                <th width="11%">Rate</th>
+                <th width="12%">Amount</th>
+            </tr>
         </thead>
-
         <tbody>
-        @php $subtotal = 0; @endphp
+            @php $subtotal = 0; $total_qty = 0; @endphp
+            @foreach($invoice->items as $index => $item)
+                @php
+                    $line = ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
+                    $subtotal += $line;
+                    $total_qty += ($item['qty'] ?? 0);
+                @endphp
+                <tr class="item-row">
+                    <td class="text-center">{{ $index + 1 }}</td>
+                    <td><strong>{{ $item['description'] }}</strong></td>
+                    <td class="text-center">{{ $item['hsn_sac'] ?? '8302' }}</td>
+                    <td class="text-center">{{ $item['qty'] }} NOS</td>
+                    <td class="text-right">{{ number_format($item['rate'], 3) }}</td>
+                    <td class="text-right">{{ number_format($line, 3) }}</td>
+                </tr>
+            @endforeach
 
-        @foreach($invoice->items as $item)
-            @php
-                $line = ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
-                $subtotal += $line;
+            <!-- Padding rows to mirror precise layout structure safely -->
+            @for ($i = count($invoice->items); $i < 3; $i++)
+                <tr class="item-row">
+                    <td></td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+            @endfor
+
+            <!-- Dynamic Tax Processing matching image_ba4d48.jpg -->
+            @php 
+                $cgstAmount = 0;
+                $sgstAmount = 0;
+                $igstAmount = 0;
+                
+                if($invoice->gst_type === 'cgst_sgst') {
+                    $cgstAmount = ($subtotal * ($invoice->gst_rate['cgst'] ?? 0)) / 100;
+                    $sgstAmount = ($subtotal * ($invoice->gst_rate['sgst'] ?? 0)) / 100;
+                } elseif($invoice->gst_type === 'igst') {
+                    $igstAmount = ($subtotal * ($invoice->gst_rate['igst'] ?? 0)) / 100;
+                }
+
+                $rawTotal = $subtotal + $cgstAmount + $sgstAmount + $igstAmount;
+                $finalTotal = round($rawTotal);
+                $roundOff = $finalTotal - $rawTotal;
             @endphp
-            <tr>
-                <td>{{ $item['description'] }}</td>
-                <td class="right">{{ $item['qty'] }}</td>
-                <td class="right">₹ {{ number_format($item['rate'], 2) }}</td>
-                <td class="right">₹ {{ number_format($line, 2) }}</td>
-            </tr>
-        @endforeach
-        </tbody>
-
-        <!-- TOTALS -->
-        <tbody class="totals">
-            <tr>
-                <td colspan="3" class="right">Subtotal</td>
-                <td class="right">₹ {{ number_format($subtotal, 2) }}</td>
-            </tr>
 
             @if($invoice->gst_type === 'cgst_sgst')
-                <tr>
-                    <td colspan="3" class="right">
-                        CGST @ {{ $invoice->gst_rate['cgst'] ?? 0 }} %
-                    </td>
-                    <td class="right">
-                        ₹ {{ number_format($subtotal * ($invoice->gst_rate['cgst'] ?? 0) / 100, 2) }}
-                    </td>
+                <!-- CGST Line Row -->
+                <tr class="tax-row">
+                    <td></td>
+                    <td class="tax-payable-text">CGST PAYABLE</td>
+                    <td></td><td></td><td></td>
+                    <td class="text-right" style="font-weight: bold;">{{ number_format($cgstAmount, 3) }}</td>
+                </tr>
+                <!-- SGST Line Row -->
+                <tr class="item-row">
+                    <td></td>
+                    <td class="tax-payable-text">SGST PAYABLE</td>
+                    <td></td><td></td><td></td>
+                    <td class="text-right" style="font-weight: bold;">{{ number_format($sgstAmount, 3) }}</td>
+                </tr>
+            @elseif($invoice->gst_type === 'igst')
+
+                <tr class="item-row">
+                    <td></td>
+                    <td class="tax-payable-text">IGST PAYABLE</td>
+                    <td></td><td></td><td></td>
+                    <td class="text-right">{{ number_format($igstAmount, 3) }}</td>
                 </tr>
 
-                <tr>
-                    <td colspan="3" class="right">
-                        SGST @ {{ $invoice->gst_rate['sgst'] ?? 0 }} %
-                    </td>
-                    <td class="right">
-                        ₹ {{ number_format($subtotal * ($invoice->gst_rate['sgst'] ?? 0) / 100, 2) }}
-                    </td>
-                </tr>
             @endif
 
-            @if($invoice->gst_type === 'igst')
-                <tr>
-                    <td colspan="3" class="right">
-                        IGST @ {{ $invoice->gst_rate['igst'] ?? 0 }} %
-                    </td>
-                    <td class="right">
-                        ₹ {{ number_format($subtotal * ($invoice->gst_rate['igst'] ?? 0) / 100, 2) }}
-                    </td>
-                </tr>
-            @endif
+            <!-- Round Off Row -->
+            <tr class="tax-row2">
+                <td></td>
+                <td class="tax-payable-text">Round Off</td>
+                <td></td><td></td><td></td>
+                <td class="text-right" style="font-weight: bold;">{{ number_format($roundOff, 3) }}</td>
+            </tr>
 
-        </tbody>
-
-        <tbody class="grand">
-            <tr>
-                <td colspan="3" class="right"><strong>Grand Total</strong></td>
-                <td class="right"><strong>₹ {{ number_format($invoice->amount, 2) }}</strong></td>
+            <!-- Content Base Frame Summary Border -->
+            <tr class="total-row">
+                <td colspan="3" class="text-right">Total</td>
+                <td class="text-center">{{ $total_qty }} NOS</td>
+                <td></td>
+                <td class="text-right">₹ {{ number_format($finalTotal, 3) }}</td>
             </tr>
         </tbody>
     </table>
 
-    <!-- PAYMENT / BANK -->
-    <div class="bottom-box">
-            <table width="100%">
-                <tr>
-                    <!-- PAYMENT -->
-                    <td width="50%" valign="top">
-                        <strong style="color:#1d4ed8; font-size:15px;">Payment Details</strong><br><br>
+    <!-- TOTAL IN WORDS STRIP -->
+    <table class="grid-table">
+        <tr>
+            <td>
+                <span style="font-size: 9px; color: #555;">Total Amount Chargeable (in words)</span><br>
+                <strong style="color: #1b75bc;">
+                    {{ ucwords(\NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format($finalTotal)) }} Indian Rupees Only
+                </strong>
+                <span style="float: right; font-size: 9px; font-weight: bold; color: #555;">E. & O.E</span>
+            </td>
+        </tr>
+    </table>
 
-                        <b>Invoice Amount:</b> ₹ {{ number_format($invoice->amount,2) }} <br>
-                        <b>Advance Receive:</b> ₹ {{ number_format($invoice->advancePayment ?? 0,2) }} <br>
+    <!-- TAX BREAKDOWN TABLE MODULE -->
+    @if($invoice->gst_type === 'cgst_sgst')
+        <table class="grid-table text-center">
+            <thead>
+                <tr style="background-color: #f0f6fb; font-weight: bold; color: #1b75bc;">
+                    <td rowspan="2" width="30%">HSN/SAC</td>
+                    <td rowspan="2" width="16%">Taxable Value</td>
+                    <td colspan="2" width="22%">CGST</td>
+                    <td colspan="2" width="22%">SGST</td>
+                    <td rowspan="2" width="10%">Total Tax Amount</td>
+                </tr>
+                <tr style="background-color: #f0f6fb; font-weight: bold; color: #1b75bc;">
+                    <td>Rate</td>
+                    <td>Amount</td>
+                    <td>Rate</td>
+                    <td>Amount</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ $invoice->items[0]['hsn_sac'] ?? '85258020' }}</td>
+                    <td class="text-right">{{ number_format($subtotal, 3) }}</td>
+                    <td>{{ $invoice->gst_rate['cgst'] ?? 9 }}%</td>
+                    <td class="text-right">{{ number_format($cgstAmount, 3) }}</td>
+                    <td>{{ $invoice->gst_rate['sgst'] ?? 9 }}%</td>
+                    <td class="text-right">{{ number_format($sgstAmount, 3) }}</td>
+                    <td class="text-right">{{ number_format($cgstAmount + $sgstAmount, 3) }}</td>
+                </tr>
+                <tr style="font-weight: bold; background-color: #f0f6fb; color: #1b75bc;">
+                    <td class="text-right">Total</td>
+                    <td class="text-right">{{ number_format($subtotal, 3) }}</td>
+                    <td></td>
+                    <td class="text-right">{{ number_format($cgstAmount, 3) }}</td>
+                    <td></td>
+                    <td class="text-right">{{ number_format($sgstAmount, 3) }}</td>
+                    <td class="text-right">{{ number_format($cgstAmount + $sgstAmount, 3) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+    @elseif($invoice->gst_type === 'igst')
+            <table class="grid-table text-center">
+                <thead>
+                    <tr style="background-color:#f0f6fb; font-weight:bold; color:#1b75bc;">
+                        <td width="30%">HSN/SAC</td>
+                        <td width="25%">Taxable Value</td>
+                        <td width="15%">IGST Rate</td>
+                        <td width="20%">IGST Amount</td>
+                        <td width="10%">Total Tax</td>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>{{ $invoice->items[0]['hsn_sac'] ?? '' }}</td>
+                        <td class="text-right">{{ number_format($subtotal,3) }}</td>
+                        <td>{{ $invoice->gst_rate['igst'] ?? 18 }}%</td>
+                        <td class="text-right">{{ number_format($igstAmount,3) }}</td>
+                        <td class="text-right">{{ number_format($igstAmount,3) }}</td>
+                    </tr>
+
+                    <tr style="font-weight:bold; background:#f0f6fb; color:#1b75bc;">
+                        <td class="text-right">Total</td>
+                        <td class="text-right">{{ number_format($subtotal,3) }}</td>
+                        <td></td>
+                        <td class="text-right">{{ number_format($igstAmount,3) }}</td>
+                        <td class="text-right">{{ number_format($igstAmount,3) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+    @endif
+
+    <!-- TAX IN WORDS STRIP -->
+    @if($invoice->gst_type !== 'no_gst')
+        <table class="grid-table">
+            <tr>
+                <td style="font-weight: bold; font-size: 10px; color: #333;">
+                    Tax Amount (in words) :
+                    <span style="color: #1b75bc;">
+
                         @php
-                            $balance = $invoice->amount - ($invoice->advancePayment ?? 0);
+                            $taxAmount = $invoice->gst_type === 'igst'
+                                ? $igstAmount
+                                : ($cgstAmount + $sgstAmount);
                         @endphp
 
-                        <b>Balance Payable:</b>
-                        <span style="color:red">
-                            ₹ {{ number_format($balance, 2) }}
-                        </span>
-                    </td>
+                        {{ ucwords(\NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format(floor($taxAmount))) }}
+                        Indian Rupees
 
-                    <!-- BANK -->
-                    <td width="40%" valign="top">
-                        <strong style="color:#1d4ed8; font-size:15px;">Bank Details</strong><br><br>
+                        @if(round(($taxAmount - floor($taxAmount)) * 100) > 0)
+                            And
+                            {{ ucwords(\NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format(round(($taxAmount - floor($taxAmount)) * 100))) }}
+                            Paise
+                        @endif
 
-                        <b>Account No:</b> {{ $invoice->bank_details['account'] ?? '' }} <br>
-                        <b>IFSC:</b> {{ $invoice->bank_details['ifsc'] ?? '' }} <br>
-                        <b>Branch:</b> {{ $invoice->bank_details['branch'] ?? '' }}
-                    </td>
-                </tr>
-            </table>
+                        Only
+                    </span>
+                </td>
+            </tr>
+        </table>
+    @endif
+
+    <!-- BANK DETAILS, TERMS AND SIGNATURE GRID MODULE -->
+    <table class="grid-table">
+        <tr>
+            <!-- Left Data Column: Bank Details & Terms -->
+            <td width="55%" style="padding: 0; border-right: 1px solid #1b75bc;">
+                <table class="grid-table" style="border: none;">
+                    <tr>
+                        <td colspan="2" class="section-heading" style="border-top: none; border-left: none; border-right: none; text-align: left;">Bank Details</td>
+                    </tr>
+                    <tr>
+                        <td width="55%" style="border: none; font-size: 10px;">
+                            <strong>Company's PAN</strong>: AAVFT0941Q <br>
+                            <strong>Branch</strong>: {{ $invoice->bank_details['branch'] ?? '' }}<br>
+                            <strong>Account No.</strong>: {{ $invoice->bank_details['account'] ?? '' }}<br>
+                            <strong>IFSC</strong>: {{ $invoice->bank_details['ifsc'] ?? 'ICIC045F' }}
+                        </td>
+                        <td width="45%" style="border: none; text-align: center; vertical-align: middle;">
+                            <img src="{{ public_path('images/qr.jpeg') }}" width="130" height="130" style="display:block; margin: 0 auto;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="section-heading" style="border-left: none; border-right: none; text-align: left;">Terms and Conditions</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="terms-box" style="border: none;">
+                            {{ $invoice->terms }}
+                            <br>
+                            <strong>Declaration:</strong>
+                            {{ $invoice->declaration }}
+
+                        </td>
+                    </tr>
+                </table>
+            </td>
+
+            <!-- Right Data Column: Authorised Signatory Area -->
+            <td width="45%" style="padding: 0; position: relative;">
+                <div style="font-size: 9px; text-align: center; padding: 4px; border-bottom: 1px solid #1b75bc; font-style: italic; color: #444;">
+                    Certified that the particulars given above are true and correct.
+                </div>
+                <div style="text-align: center; font-weight: bold; margin-top: 10px; color: #1b75bc;">
+                    For TECHSTROTA
+                </div>
+
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; border-top: 1px solid #1b75bc; text-align: center; font-weight: bold; padding: 5px; background-color: #f0f6fb; color: #1b75bc;">
+                    Authorised Signatory
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="computer-generated-note">
+        This is a Computer Generated Invoice.
     </div>
 
-    <!-- WORDS -->
-    <div class="words">
-        <strong>Amount in Words:</strong>
-        {{ strtoupper(\NumberFormatter::create('en_IN', \NumberFormatter::SPELLOUT)->format($invoice->amount)) }} RUPEES ONLY
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- TERMS -->
-    <div class="terms">
-        <strong>Terms:</strong> {{ $invoice->terms }}<br><br>
-        <strong>Declaration:</strong><br>
-        {{ $invoice->declaration }}
-    </div>
-
-    <!-- SIGNATURE -->
-    <div class="sign">
-        For,<strong>TECHSTROTA</strong><br><br><br>
-        {{ $invoice->signatureName ?? 'Authorized Signature' }}
-    </div>
-
-</div>
-
-<!-- FOOTER BAR -->
-<div class="footer">
-    Email: info@techstrota.com |
-    Call Us: +91 90334 76660 |
-    <a href="https://techstrota.com" style="color:#000; text-decoration:none;">
-        techstrota.com
-    </a>
 </div>
 
 </body>

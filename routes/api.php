@@ -65,7 +65,13 @@ Route::get('/galleries/{id}', function ($id) {
         'id' => $gallery->id,
         'title' => $gallery->title,
         'description' => $gallery->description,
+
+        'seo_title' => $gallery->seo_title,
+        'meta_description' => $gallery->meta_description,
+        'keywords' => $gallery->keywords,
+
         'main_image' => asset('storage/' . $gallery->main_image),
+
         'gallery_images' => collect($gallery->gallery_images)->map(function ($img) {
             return asset('storage/' . $img);
         }),
