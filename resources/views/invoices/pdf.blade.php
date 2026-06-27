@@ -148,13 +148,12 @@
     <table style="width:100%; border-collapse: collapse;">
         <tr>
             <td class="invoice-type-title" style="text-align:center;">
-                INVOICE
+                TAX INVOICE
             </td>
         </tr>
     </table>
 
 <div>
-
     <!-- MAIN STRUCTURAL THREE-COLUMN BLOCK -->
     <table class="grid-table">
         <tr>
