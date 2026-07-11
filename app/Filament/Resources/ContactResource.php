@@ -12,6 +12,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ViewAction;
 
 class ContactResource extends Resource
 {
@@ -31,7 +32,11 @@ class ContactResource extends Resource
             TextInput::make('email')->email()->required()->maxLength(100),
             TextInput::make('mobileno')->tel()->required()->maxLength(15),
             TextInput::make('subject')->required()->maxLength(150),
-            Textarea::make('message')->maxLength(500),
+            Textarea::make('message')
+                ->label('Message')
+                ->rows(10)          // Makes the textarea much taller
+                ->columnSpanFull()  // Uses the full width
+                ->disabled(),
         ]);
     }
 
@@ -44,6 +49,13 @@ class ContactResource extends Resource
                 TextColumn::make('mobileno')->sortable()->searchable(),
                 TextColumn::make('subject')->sortable()->searchable(),
                 TextColumn::make('message')->limit(30),
+                TextColumn::make('created_at')
+                    ->label('Received On')
+                    ->dateTime('d M Y')
+                    ->sortable(),
+            ])
+            ->actions([
+                ViewAction::make(),
             ])
             ->defaultSort('created_at', 'desc')
             ->bulkActions([
@@ -57,6 +69,7 @@ class ContactResource extends Resource
     {
         return [
             'index' => Pages\ListContacts::route('/'),
+            'view' => Pages\ViewContact::route('/{record}'),
         ];
     }
 }
