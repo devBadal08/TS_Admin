@@ -47,6 +47,7 @@ class BlogResource extends Resource
                     ->label('Main Image')
                     ->image()
                     ->directory('blogs')
+                    ->maxSize(20480)
                     ->required(),
                 Repeater::make('gallery')
                     ->label('Gallery Images')
@@ -56,7 +57,7 @@ class BlogResource extends Resource
                             ->directory('blogs/gallery')
                             ->image()
                             ->imagePreviewHeight('100')
-                            ->maxSize(2048),
+                            ->maxSize(20480),
                         TextInput::make('desc')
                             ->label('Description')
                             ->maxLength(255),

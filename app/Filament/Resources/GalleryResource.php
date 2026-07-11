@@ -38,6 +38,7 @@ class GalleryResource extends Resource
                     ->label('Main Image')
                     ->image()
                     ->disk('public')
+                    ->maxSize(20480)
                     ->directory('gallery'),
 
                 Textarea::make('description')
@@ -55,6 +56,7 @@ class GalleryResource extends Resource
                     ->disk('public')
                     ->directory('gallery')
                     ->reorderable()
+                    ->maxSize(20480)
                     ->imagePreviewHeight('100'),
             ]);
     }

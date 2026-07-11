@@ -36,6 +36,7 @@ class PortfolioResource extends Resource
                 ->image()
                 ->directory('portfolio-images')
                 ->label('Main Image')
+                ->maxSize(20480)
                 ->required(),
             // Gallery section: Repeater with image and description per image
             Repeater::make('gallery')
