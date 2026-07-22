@@ -431,7 +431,8 @@
                     </tr>
                     <tr>
                         <td width="55%" style="border: none; font-size: 10px;">
-                            <strong>Company's PAN</strong>: AAVFT0941Q <br>
+                            <strong>Company's PAN</strong>: {{ $invoice->bank_details['pan'] ?? '' }} <br>
+                            <strong>Bank Name</strong>: {{ $invoice->bank_details['bank_name'] ?? '' }}<br>
                             <strong>Branch</strong>: {{ $invoice->bank_details['branch'] ?? '' }}<br>
                             <strong>Account No.</strong>: {{ $invoice->bank_details['account'] ?? '' }}<br>
                             <strong>IFSC</strong>: {{ $invoice->bank_details['ifsc'] ?? 'ICIC045F' }}
@@ -440,18 +441,7 @@
                             <img src="{{ public_path('images/qr.jpeg') }}" width="130" height="130" style="display:block; margin: 0 auto;">
                         </td>
                     </tr>
-                    <tr>
-                        <td colspan="2" class="section-heading" style="border-left: none; border-right: none; text-align: left;">Terms and Conditions</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" class="terms-box" style="border: none;">
-                            {{ $invoice->terms }}
-                            <br>
-                            <strong>Declaration:</strong>
-                            {{ $invoice->declaration }}
-
-                        </td>
-                    </tr>
+                    
                 </table>
             </td>
 
@@ -469,10 +459,38 @@
                 </div>
             </td>
         </tr>
+        <tr>
+            <td colspan="2" style="padding:0;">
+
+                <table class="grid-table" style="border:none;">
+
+                    <tr>
+                        <td class="section-heading"
+                            style="border:none;text-align:left;">
+                            Terms and Conditions
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="terms-box" style="border:none;">
+
+                            {!! $invoice->terms !!}
+
+                            <strong>Declaration:</strong>
+
+                            {!! $invoice->declaration !!}
+
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
     </table>
 
     <div class="computer-generated-note">
-        This is a Computer Generated Invoice.
+        This is a System Generated Invoice.
     </div>
 
 </div>

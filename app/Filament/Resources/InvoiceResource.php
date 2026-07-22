@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
 
 class InvoiceResource extends Resource
 {
@@ -47,7 +48,38 @@ class InvoiceResource extends Resource
                     Forms\Components\Textarea::make('customer.address')->required(),
                     Forms\Components\TextInput::make('customer.gstno')
                         ->label('GST No')
-                        ->maxLength(15),
+                        ->maxLength(15)
+                        ->live(onBlur: true)
+                        ->suffixIcon('heroicon-o-arrow-path')
+                        ->afterStateUpdated(function ($state, callable $set) {
+
+                            $gstNo = strtoupper(trim($state));
+
+                            if (strlen($gstNo) !== 15) {
+                                return;
+                            }
+
+                            $gst = app(\App\Services\GstVerifyService::class)->verify($gstNo);
+
+                            if (! $gst) {
+                                Notification::make()
+                                    ->title('GST Number not found')
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $set('customer.name', $gst['legal_name']);
+                            $set('customer.address', $gst['address']);
+                            $set('customer.state_name', $gst['state']);
+                            $set('customer.state_code', $gst['state_code']);
+
+                            Notification::make()
+                                ->title('GST Verified Successfully')
+                                ->success()
+                                ->send();
+                        }),
                     Forms\Components\TextInput::make('customer.state_name')
                         ->label('State Name')
                         ->required(),
@@ -91,37 +123,79 @@ class InvoiceResource extends Resource
             Forms\Components\Select::make('gst_type')
                 ->options([
                     'cgst_sgst' => 'CGST + SGST',
-                    'igst' => 'IGST',
-                    'no_gst' => 'No GST',
+                    'igst'      => 'IGST',
+                    'no_gst'    => 'No GST',
                 ])
                 ->required()
-                ->live(onBlur: true)
-                ->columnSpanFull(),
+                ->live()
+                ->afterStateUpdated(function ($state, callable $set) {
+
+                    if ($state === 'cgst_sgst') {
+                        $set('gst_rate.cgst', 9);
+                        $set('gst_rate.sgst', 9);
+                        $set('gst_rate.igst', null);
+                    }
+
+                    if ($state === 'igst') {
+                        $set('gst_rate.igst', 18);
+                        $set('gst_rate.cgst', null);
+                        $set('gst_rate.sgst', null);
+                    }
+
+                    if ($state === 'no_gst') {
+                        $set('gst_rate.cgst', null);
+                        $set('gst_rate.sgst', null);
+                        $set('gst_rate.igst', null);
+                    }
+                }),
 
             /* ===== GST RATE (JSON) ===== */
-            Forms\Components\Group::make()
-                ->visible(fn ($get) => $get('gst_type') === 'cgst_sgst')
-                ->schema([
-                    Forms\Components\TextInput::make('gst_rate.cgst')->label('CGST %')->numeric(),
-                    Forms\Components\TextInput::make('gst_rate.sgst')->label('SGST %')->numeric(),
-                ]),
+            Forms\Components\Hidden::make('gst_rate.cgst'),
 
-            Forms\Components\TextInput::make('gst_rate.igst')
-                ->label('IGST %')
-                ->numeric()
-                ->visible(fn ($get) => $get('gst_type') === 'igst'),
+            Forms\Components\Hidden::make('gst_rate.sgst'),
+
+            Forms\Components\Hidden::make('gst_rate.igst'),
 
             /* ========== ITEMS (JSON REPEATER) ========== */
             Forms\Components\Repeater::make('items')
                 ->label('Invoice Items')
                 ->required()
+                ->live()
+                ->afterStateUpdated(fn ($set, $get) => self::calculateSubTotal($set, $get))
                 ->schema([
                     Forms\Components\TextInput::make('description')
                         ->label('Description')
                         ->required(),
 
-                    Forms\Components\TextInput::make('hsn_sac')
-                        ->label('HSN / SAC ')
+                    Forms\Components\Select::make('hsn_sac')
+                        ->label('HSN / SAC')
+                        ->options(function () {
+
+                            $defaultCodes = [
+                                '998314' => '998314 (IT Design & Development Services)',
+                                '998313' => '998313 (IT Consulting & Support Services)',
+                                '998316' => '998316 (IT Infrastructure & network Management Services)',
+                                '998361' => '998361 (Advertising Services)',
+                            ];
+
+                            $savedCodes = Invoice::all()
+                                ->pluck('items')
+                                ->flatten(1)
+                                ->pluck('hsn_sac')
+                                ->filter()
+                                ->unique()
+                                ->mapWithKeys(fn ($code) => [$code => $code])
+                                ->toArray();
+
+                            return $defaultCodes + $savedCodes;
+                        })
+                        ->searchable()
+                        ->createOptionForm([
+                            Forms\Components\TextInput::make('value')
+                                ->label('HSN / SAC Code')
+                                ->required(),
+                        ])
+                        ->createOptionUsing(fn (array $data) => $data['value'])
                         ->required(),
 
                     Forms\Components\TextInput::make('qty')
@@ -171,18 +245,76 @@ class InvoiceResource extends Resource
                 ->columnSpanFull()
                 ->required(),
 
+            Forms\Components\Select::make('terms_template')
+                ->label('Terms Template')
+                ->placeholder('Select Template')
+                ->options([
+                    'standard' => 'Standard',
+                    'web development' => 'Web Development',
+                    'marketing' => 'Digital Marketing',
+                ])
+                ->live()
+                ->afterStateUpdated(function ($state, callable $set) {
+
+                    $templates = [
+
+                        'standard' => '
+                            <p>Payment is due within 7 days from the invoice date.</p>
+                            <p>Website hosting and domain registration are valid for one year from the date of activation.</p>
+                        ',
+                        'web development' => '
+                            <p>This invoice is raised for the completed website development project as per the agreed scope of work.</p>
+                            <p>Any additional features, modifications, or enhancements requested after project completion will be treated as separate work and billed accordingly.</p>
+                        ',
+                        'marketing' => '
+                            <p>Payment must be made monthly in advance.</p>
+                            <p>The package includes 10 social media posts, 6 reels, captions, hashtags, graphic design, video editing, and content planning.</p>
+                            <p>Any services requested outside the agreed package will be charged separately.</p>
+                        ',
+                    ];
+
+                    $set('terms', $templates[$state] ?? '');
+
+                }),
+
             /* ========== TERMS & CONDITIONS ========== */
-            Forms\Components\Textarea::make('terms')
+            Forms\Components\RichEditor::make('terms')
                 ->label('Terms & Conditions')
-                ->rows(3)
                 ->placeholder('Enter payment terms, conditions, etc.')
                 ->required()
                 ->columnSpanFull(),
 
+            Forms\Components\Select::make('declaration_template')
+                ->label('Declaration Template')
+                ->placeholder('Select Declaration')
+                ->options([
+                    'default' => 'Default',
+                    'gst' => 'GST Declaration',
+                ])
+                ->live()
+                ->afterStateUpdated(function ($state, callable $set) {
+
+                    $templates = [
+
+                        'default' => '
+                            <p>We hereby declare that the information mentioned in this invoice is true and correct.</p>
+                            <p>The services described have been provided as agreed, and the amount shown is payable as per the agreed terms and conditions.</p>
+                        ',
+
+                        'gst' => '
+                            <p>Certified that the particulars given above are true and correct and the amount indicated represents the actual value of the taxable supply.</p>
+                            <p>The services mentioned have been completed and delivered as per the agreed project scope and client requirements</p>
+                        ',
+
+                    ];
+
+                    $set('declaration', $templates[$state] ?? '');
+
+                }),
+
             /* ========== DECLARATION ========== */
-            Forms\Components\Textarea::make('declaration')
+            Forms\Components\RichEditor::make('declaration')
                 ->label('Declaration')
-                ->rows(3)
                 ->placeholder('Enter your declaration statement')
                 ->required()
                 ->columnSpanFull(),
@@ -259,7 +391,6 @@ class InvoiceResource extends Resource
                     ->color('success')
                     ->url(fn (Invoice $record) => route('invoice.pdf', $record))
                     ->openUrlInNewTab(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->defaultSort('id','desc')
             ->bulkActions([

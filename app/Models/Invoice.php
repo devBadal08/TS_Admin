@@ -53,7 +53,15 @@ class Invoice extends Model
                 'address' => '503, Sterling Centre, R C Dutt Road, Alkapuri, Vadodara - 390007',
                 'phone'   => '+91-81288 40055',
                 'email'   => 'info@techstrota.com',
+            ];
+
+            $invoice->bank_details = [
                 'pan'     => 'AAVFT0941Q',
+                'bank_name' => 'Kotak Mahindra Bank',
+                'branch'    => 'Vadodara - Race Course Circle',
+                'account'   => '1147535073',
+                'ifsc'      => 'KKBK0000841',
+                'gstin'     => '24AAVFT0941Q1ZF',
             ];
 
             // If NO GST selected, save empty gst_rate

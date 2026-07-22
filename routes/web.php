@@ -5,6 +5,7 @@ use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProformaInvoiceController;
+use App\Services\GstVerifyService;
 
 Route::get('/', function () {
     return redirect('/admin');
@@ -24,3 +25,15 @@ Route::get('/receipt/{receipt}', [InvoiceController::class, 'generateReceipt'])
 
 Route::get('/proforma/{id}/download', [ProformaInvoiceController::class, 'download'])
     ->name('proforma.download');
+
+Route::get('/gst-test', function (GstVerifyService $gst) {
+
+    $response = $gst->verify('24AAVFT0941Q1ZF');
+
+    dd([
+        
+        'Headers' => $response->headers(),
+        'Body' => $response->body(),
+    ]);
+
+});

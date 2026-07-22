@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'gstverify' => [
+        'api_key' => env('GSTVERIFY_API_KEY'),
+        'base_url' => env('GSTVERIFY_BASE_URL'),
+    ],
+
 ];
