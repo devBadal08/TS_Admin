@@ -33,7 +33,7 @@ Route::middleware('auth:sanctum')->get('/admin', function (Request $request) {
 })->name('admin.dashboard');
 
 Route::get('/portfolios', function () {
-    return Portfolio::orderBy('created_at', 'desc')->get();
+    return Portfolio::orderBy('sort')->get();
 });
 
 Route::get('/clients', function () {

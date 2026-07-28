@@ -13,6 +13,7 @@ class Portfolio extends Model
         'image',
         'gallery',
         'url',
+        'sort',
     ];
 
     protected $casts = [

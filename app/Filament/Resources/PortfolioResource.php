@@ -65,14 +65,15 @@ class PortfolioResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->reorderable('sort')
+            ->defaultSort('sort', 'asc')
             ->columns([
-                TextColumn::make('title')->sortable()->searchable(),
+                TextColumn::make('title')->searchable(),
                 ImageColumn::make('image')->label('Main Image'),
                 TextColumn::make('url')
                     ->label('Project URL')
                     ->url(fn ($record) => $record->url, true),
             ])
-            ->defaultSort('id', 'desc')
             ->actions([
                 EditAction::make(),
                 DeleteAction::make(), // 👈 Add this line for delete button
