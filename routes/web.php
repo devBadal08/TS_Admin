@@ -6,6 +6,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProformaInvoiceController;
 use App\Services\GstVerifyService;
+use App\Http\Controllers\PayslipController;
 
 Route::get('/', function () {
     return redirect('/admin');
@@ -37,3 +38,8 @@ Route::get('/gst-test', function (GstVerifyService $gst) {
     ]);
 
 });
+
+Route::get(
+    '/payslip/{payslip}/download',
+    [PayslipController::class, 'download']
+)->name('payslip.download');

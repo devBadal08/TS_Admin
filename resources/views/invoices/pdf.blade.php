@@ -229,7 +229,7 @@
                 <tr class="item-row">
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td><strong>{{ $item['description'] }}</strong></td>
-                    <td class="text-center">{{ $item['hsn_sac'] ?? '8302' }}</td>
+                    <td class="text-center">{{ $item['hsn_sac'] ?? '' }}</td>
                     <td class="text-center">{{ $item['qty'] }} NOS</td>
                     <td class="text-right">{{ number_format($item['rate'], 3) }}</td>
                     <td class="text-right">{{ number_format($line, 3) }}</td>

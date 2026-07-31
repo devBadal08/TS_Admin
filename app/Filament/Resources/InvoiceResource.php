@@ -81,13 +81,11 @@ class InvoiceResource extends Resource
                                 ->send();
                         }),
                     Forms\Components\TextInput::make('customer.state_name')
-                        ->label('State Name')
-                        ->required(),
+                        ->label('State Name'),
 
                     Forms\Components\TextInput::make('customer.state_code')
                         ->label('State Code')
-                        ->numeric()
-                        ->required(),
+                        ->numeric(),
                 ]),
 
             /* ========== BANK DETAILS (JSON) ========== */
@@ -192,11 +190,9 @@ class InvoiceResource extends Resource
                         ->searchable()
                         ->createOptionForm([
                             Forms\Components\TextInput::make('value')
-                                ->label('HSN / SAC Code')
-                                ->required(),
+                                ->label('HSN / SAC Code'),
                         ])
-                        ->createOptionUsing(fn (array $data) => $data['value'])
-                        ->required(),
+                        ->createOptionUsing(fn (array $data) => $data['value']),
 
                     Forms\Components\TextInput::make('qty')
                         ->numeric()
@@ -380,8 +376,12 @@ class InvoiceResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('invoice_no')->searchable(),
-                Tables\Columns\TextColumn::make('customer.name')->label('Customer'),
+                Tables\Columns\TextColumn::make('customer.name')
+                    ->label('Customer')
+                    ->limit(20)
+                    ->tooltip(fn ($record) => $record->customer['name'] ?? ''),
                 Tables\Columns\TextColumn::make('amount')->money('INR'),
+                Tables\Columns\TextColumn::make('invoice_date')->date('d-m-Y'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
