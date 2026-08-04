@@ -10,6 +10,8 @@ class AnalyticsStats extends StatsOverviewWidget
 {
     protected ?string $heading = 'Website Traffic Analytics';
 
+    protected int|string|array $columnSpan = '2';
+
     // Optional: Add a description too
     protected ?string $description = 'Real-time visitor and page interaction data';
 

@@ -39,14 +39,17 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
-                \App\Filament\Widgets\AdminStats::class,
-                \App\Filament\Widgets\AnalyticsStats::class,
-                \App\Filament\Widgets\PopularPagesTable::class,
-                \App\Filament\Widgets\LiveActivePagesTable::class,
+                \App\Filament\Widgets\AdminStats::class, // above first 3 cards
+                \App\Filament\Widgets\InvoiceOverview::class, // for invoices overview
+                \App\Filament\Widgets\InvoiceDonutChart::class, // for invoices donut chart
+                \App\Filament\Widgets\AdminStatBottom::class, // below first 3 cards
+                \App\Filament\Widgets\AnalyticsStats::class, // for analytics overview
+                \App\Filament\Widgets\LiveActivePagesTable::class, // for live active pages table
+                \App\Filament\Widgets\PopularPagesTable::class, // for popular pages table
+                
             ])
             ->middleware([
                 EncryptCookies::class,

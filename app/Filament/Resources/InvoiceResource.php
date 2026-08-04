@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\ToggleColumn;
 
 class InvoiceResource extends Resource
 {
@@ -382,6 +383,10 @@ class InvoiceResource extends Resource
                     ->tooltip(fn ($record) => $record->customer['name'] ?? ''),
                 Tables\Columns\TextColumn::make('amount')->money('INR'),
                 Tables\Columns\TextColumn::make('invoice_date')->date('d-m-Y'),
+                Tables\Columns\ToggleColumn::make('payment_status')
+                    ->label('Payment Status')
+                    ->onColor('success')
+                    ->offColor('danger'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

@@ -4,15 +4,11 @@ namespace App\Filament\Widgets;
 
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\HtmlString;
 
 use App\Models\Blog;
 use App\Models\Contact;
 use App\Models\Portfolio;
-use App\Models\Client;
-use App\Models\Gallery;
-use App\Models\Invoice;
-use App\Models\ProformaInvoice;
-use App\Models\PaymentReceipt;
 
 class AdminStats extends BaseWidget
 {
@@ -33,52 +29,28 @@ class AdminStats extends BaseWidget
         return [
 
             Stat::make('Blogs', Blog::count())
-                ->description('Total blog posts')
-                ->icon('heroicon-o-pencil-square')
                 ->color('primary')
+                ->description(new HtmlString('
+                    <span class="text-xs text-primary-600">Total blog posts</span>
+                    <img src="' . asset('images/blog.png') . '" style="position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); width: 6.5rem; height: 6.5rem; object-fit: contain;" />
+                '))
                 ->url(\App\Filament\Resources\BlogResource::getUrl()),
 
             Stat::make('Contacts', Contact::count())
-                ->description('Customer inquiries')
-                ->icon('heroicon-o-envelope')
                 ->color('success')
+                ->description(new HtmlString('
+                    <span class="text-xs text-success-600">Customer inquiries</span>
+                    <img src="' . asset('images/contact.png') . '" style="position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); width: 6.5rem; height: 6.5rem; object-fit: contain;" />
+                '))
                 ->url(\App\Filament\Resources\ContactResource::getUrl()),
 
             Stat::make('Portfolios', Portfolio::count())
-                ->description('Projects showcase')
-                ->icon('heroicon-o-briefcase')
                 ->color('info')
+                ->description(new HtmlString('
+                    <span class="text-xs text-info-600">Projects showcase</span>
+                    <img src="' . asset('images/portfolio.png') . '" style="position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); width: 6.5rem; height: 6.5rem; object-fit: contain;" />
+                '))
                 ->url(\App\Filament\Resources\PortfolioResource::getUrl()),
-
-            Stat::make('Clients', Client::count())
-                ->description('Registered clients')
-                ->icon('heroicon-o-users')
-                ->color('warning')
-                ->url(\App\Filament\Resources\ClientResource::getUrl()),
-
-            Stat::make('Galleries', Gallery::count())
-                ->description('Photo galleries')
-                ->icon('heroicon-o-photo')
-                ->color('success')
-                ->url(\App\Filament\Resources\GalleryResource::getUrl()),
-
-            Stat::make('Invoices', Invoice::count())
-                ->description('Total invoices')
-                ->icon('heroicon-o-document-text')
-                ->color('info')
-                ->url(\App\Filament\Resources\InvoiceResource::getUrl()),
-
-            Stat::make('Proforma Invoices', ProformaInvoice::count())
-                ->description('Draft invoices')
-                ->icon('heroicon-o-clipboard-document')
-                ->color('primary')
-                ->url(\App\Filament\Resources\ProformaInvoiceResource::getUrl()),
-
-            Stat::make('Payment Receipts', PaymentReceipt::count())
-                ->description('Received payments')
-                ->icon('heroicon-o-banknotes')
-                ->color('success')
-                ->url(\App\Filament\Resources\InstallmentInvoiceResource::getUrl()),
 
         ];
     }
