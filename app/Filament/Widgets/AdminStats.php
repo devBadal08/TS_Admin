@@ -9,6 +9,9 @@ use Illuminate\Support\HtmlString;
 use App\Models\Blog;
 use App\Models\Contact;
 use App\Models\Portfolio;
+use App\Models\Client;
+use App\Models\Gallery;
+use App\Models\Employee;
 
 class AdminStats extends BaseWidget
 {
@@ -51,6 +54,33 @@ class AdminStats extends BaseWidget
                     <img src="' . asset('images/portfolio.png') . '" style="position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); width: 6.5rem; height: 6.5rem; object-fit: contain;" />
                 '))
                 ->url(\App\Filament\Resources\PortfolioResource::getUrl()),
+
+            Stat::make('Clients', Client::count())
+                ->color('warning')
+                ->extraAttributes(['class' => 'stat-card-custom'])
+                ->description(new HtmlString('
+                    <span class="text-xs text-warning-600">Registered clients</span>
+                    <img src="' . asset('images/client.png') . '" style="position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); width: 7.5rem; height: 7.5rem; object-fit: contain;" />
+                '))
+                ->url(\App\Filament\Resources\ClientResource::getUrl()),
+
+            Stat::make('Galleries', Gallery::count())
+                ->color('success')
+                ->extraAttributes(['class' => 'stat-card-custom'])
+                ->description(new HtmlString('
+                    <span class="text-xs text-success-600">Photo galleries</span>
+                    <img src="' . asset('images/gallery.png') . '" style="position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); width: 7.5rem; height: 7.5rem; object-fit: contain;" />
+                '))
+                ->url(\App\Filament\Resources\GalleryResource::getUrl()),
+
+            Stat::make('Employees', Employee::count())
+                ->color('warning')
+                ->extraAttributes(['class' => 'stat-card-custom'])
+                ->description(new HtmlString('
+                    <span class="text-xs text-warning-600">Total employees</span>
+                    <img src="' . asset('images/employee.png') . '" style="position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); width: 7.5rem; height: 7.5rem; object-fit: contain;" />
+                '))
+                ->url(\App\Filament\Resources\EmployeeResource::getUrl()),
 
         ];
     }

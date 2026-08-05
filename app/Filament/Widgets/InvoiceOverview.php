@@ -9,10 +9,7 @@ class InvoiceOverview extends Widget
 {
     protected static string $view = 'filament.widgets.invoice-overview';
 
-    protected int|string|array $columnSpan = [
-        'default' => 'full',
-        'xl' => 0,
-    ];
+    protected int|string|array $columnSpan = 'full';
 
     public function getViewData(): array
     {

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use Carbon\Carbon;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -44,7 +45,22 @@ class Invoice extends Model
     {
         static::saving(function ($invoice) {
             if (empty($invoice->invoice_no)) {
-                $invoice->invoice_no = self::generateNextInvoiceNumber();
+                $invoice->invoice_no = self::generateNextInvoiceNumber($invoice->invoice_date);
+            } 
+            elseif ($invoice->isDirty('invoice_date')) {
+
+                preg_match('/TS\/INV(\d+)/', $invoice->invoice_no, $matches);
+
+                $number = isset($matches[1]) ? (int) $matches[1] : 1;
+
+                $date = \Carbon\Carbon::parse($invoice->invoice_date);
+
+                $invoice->invoice_no = sprintf(
+                    'TS/INV%02d/%02d-%04d',
+                    $number,
+                    $date->format('m'),
+                    $date->format('Y')
+                );
             }
 
             /* ========== SELLER AUTO ========== */
@@ -107,27 +123,28 @@ class Invoice extends Model
         });
     }
 
-    public static function generateNextInvoiceNumber(): string
+    public static function generateNextInvoiceNumber($invoiceDate = null): string
     {
-        $month = date('m');   // 11
-        $year  = date('Y');   // 2025
-        $monthYear = $month . '-' . $year; // 11-2025
+        $date = $invoiceDate
+            ? \Carbon\Carbon::parse($invoiceDate)
+            : now();
 
-        // Get last invoice from same month & year
-        $lastInvoice = self::whereYear('created_at', $year)
-            ->orderBy('id', 'desc')
-            ->first();
+        $lastInvoice = self::latest('id')->first();
 
         if ($lastInvoice) {
-            // Example: TS/INV05/11-2025
             preg_match('/INV(\d+)/', $lastInvoice->invoice_no, $matches);
             $lastNumber = isset($matches[1]) ? (int) $matches[1] : 0;
         } else {
             $lastNumber = 0;
         }
 
-        $next = $lastNumber + 1;
+        $nextNumber = $lastNumber + 1;
 
-        return 'TS/INV' . str_pad($next, 2, '0', STR_PAD_LEFT) . '/' . $monthYear;
+        return sprintf(
+            'TS/INV%02d/%02d-%04d',
+            $nextNumber,
+            $date->format('m'),
+            $date->format('Y')
+        );
     }
 }

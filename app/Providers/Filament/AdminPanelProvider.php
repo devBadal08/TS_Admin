@@ -43,9 +43,11 @@ class AdminPanelProvider extends PanelProvider
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
                 \App\Filament\Widgets\AdminStats::class, // above first 3 cards
-                \App\Filament\Widgets\InvoiceOverview::class, // for invoices overview
-                \App\Filament\Widgets\InvoiceDonutChart::class, // for invoices donut chart
+                \App\Filament\Widgets\InvoiceCard::class, // for invoices card
                 \App\Filament\Widgets\AdminStatBottom::class, // below first 3 cards
+                //\App\Filament\Widgets\InvoiceOverview::class, // for invoices overview
+                //\App\Filament\Widgets\InvoiceDonutChart::class, // for invoices donut chart
+                
                 \App\Filament\Widgets\AnalyticsStats::class, // for analytics overview
                 \App\Filament\Widgets\LiveActivePagesTable::class, // for live active pages table
                 \App\Filament\Widgets\PopularPagesTable::class, // for popular pages table

@@ -4,7 +4,7 @@
 @endphp
 
 <x-filament::card>
-    <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 items-center">
+    <div class="grid grid-cols-1 gap-8 items-center">
         
         <!-- LEFT CONTENT BLOCK -->
         <div class="space-y-3">

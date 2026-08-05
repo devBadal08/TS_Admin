@@ -32,13 +32,30 @@ class InvoiceResource extends Resource
 
             Forms\Components\Placeholder::make('display_invoice_no')
                 ->label('Invoice No')
-                ->content(fn ($record) =>
-                    $record?->invoice_no ?? Invoice::generateNextInvoiceNumber()
-                ),
+                ->content(function ($get, $record) {
+
+                    if ($record) {
+                        $date = \Carbon\Carbon::parse($get('invoice_date') ?? $record->invoice_date);
+
+                        preg_match('/TS\/INV(\d+)/', $record->invoice_no, $matches);
+
+                        $number = isset($matches[1]) ? (int) $matches[1] : 1;
+
+                        return sprintf(
+                            'TS/INV%02d/%02d-%04d',
+                            $number,
+                            $date->format('m'),
+                            $date->format('Y')
+                        );
+                    }
+
+                    return Invoice::generateNextInvoiceNumber($get('invoice_date'));
+                }),
 
             Forms\Components\DatePicker::make('invoice_date')
                 ->label('Invoice Date')
                 ->required()
+                ->live()
                 ->default(now()),
 
             /* ========== CUSTOMER DETAILS (JSON) ========== */

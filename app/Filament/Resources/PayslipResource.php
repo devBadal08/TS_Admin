@@ -206,7 +206,7 @@ class PayslipResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-
+                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('download')
                     ->label('Download PDF')
                     ->icon('heroicon-o-arrow-down-tray')
