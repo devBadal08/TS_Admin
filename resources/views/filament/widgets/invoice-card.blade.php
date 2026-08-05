@@ -43,11 +43,55 @@
                 </div>
 
                 <!-- Middle Progress Bar -->
-                <!-- Middle Financial Breakdown -->
                 <div class="flex flex-col items-center justify-center border-x border-gray-100 dark:border-gray-800 px-4">
-                    <span class="text-xs font-medium text-gray-400">Paid Amount</span>
-                    <span class="text-lg font-bold text-emerald-600">₹{{ number_format($paidAmount, 2) }}</span>
-                    <span class="text-[11px] text-gray-400">Pending: ₹{{ number_format($unpaidAmount, 2) }}</span>
+
+                    <div class="flex items-center gap-2">
+
+                        <span class="text-xs font-medium text-gray-400">
+                            Paid Amount
+                        </span>
+
+                        @if($showAmounts)
+
+                            <button wire:click="$set('showAmounts', false)">
+                                <x-heroicon-o-eye-slash class="w-5 h-5 text-gray-500"/>
+                            </button>
+
+                        @else
+
+                            <button
+                                x-on:click="$dispatch('open-modal', { id: 'unlockAmountModal' })">
+
+                                <x-heroicon-o-eye class="w-5 h-5 text-gray-500"/>
+
+                            </button>
+
+                        @endif
+
+                    </div>
+
+                    @if($showAmounts)
+
+                        <span class="text-lg font-bold text-emerald-600">
+                            ₹{{ number_format($paidAmount,2) }}
+                        </span>
+
+                        <span class="text-[11px] text-gray-400">
+                            Pending: ₹{{ number_format($unpaidAmount,2) }}
+                        </span>
+
+                    @else
+
+                        <span class="text-lg font-bold text-gray-400">
+                            ********
+                        </span>
+
+                        <span class="text-[11px] text-gray-400">
+                            ********
+                        </span>
+
+                    @endif
+
                 </div>
 
                 <!-- Unpaid Block -->
@@ -67,4 +111,40 @@
             </div>
         </div>
     </x-filament::card>
+
+    <!-- Password Modal -->
+    <x-filament::modal id="unlockAmountModal">
+
+        <x-slot name="heading">
+            Enter Password
+        </x-slot>
+
+        <div class="space-y-4">
+            <div x-data="{ show: false }" class="relative flex items-center">
+                <input
+                    :type="show ? 'text' : 'password'"
+                    wire:model.defer="password"
+                    placeholder="Enter password"
+                    class="block w-full rounded-xl border border-gray-300 py-3 pl-4 pr-10 focus:border-primary-500 focus:ring-primary-500"
+                >
+
+                <button
+                    type="button"
+                    @click="show = !show"
+                    style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); z-index: 10;"
+                    class="text-gray-500 hover:text-gray-700"
+                >
+                    <x-heroicon-o-eye x-show="!show" class="w-5 h-5" />
+                    <x-heroicon-o-eye-slash x-show="show" class="w-5 h-5" />
+                </button>
+            </div>
+
+            <x-filament::button
+                wire:click="unlockAmounts"
+                class="w-full">
+                Unlock
+            </x-filament::button>
+        </div>
+
+    </x-filament::modal>
 </x-filament::widget>
