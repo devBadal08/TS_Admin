@@ -125,8 +125,13 @@
                     :type="show ? 'text' : 'password'"
                     wire:model.defer="password"
                     placeholder="Enter password"
-                    class="block w-full rounded-xl border border-gray-300 py-3 pl-4 pr-10 focus:border-primary-500 focus:ring-primary-500"
-                >
+                    class="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-4 pr-10
+                        text-gray-900 placeholder-gray-400
+                        focus:border-primary-500 focus:ring-primary-500
+                        dark:border-gray-600 dark:bg-gray-800
+                        dark:text-white dark:placeholder-gray-400
+                        dark:focus:border-primary-500"
+                />
 
                 <button
                     type="button"

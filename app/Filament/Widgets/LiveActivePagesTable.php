@@ -9,7 +9,10 @@ use Filament\Widgets\TableWidget;
 
 class LiveActivePagesTable extends TableWidget
 {
-    protected int|string|array $columnSpan = "full";
+    protected int|string|array $columnSpan = [
+        'default' => 'full',
+        'lg' => 1,
+    ];
 
     public function table(Table $table): Table
     {
