@@ -11,6 +11,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ToggleColumn;
+use App\Models\Customer;
 
 class InvoiceResource extends Resource
 {
@@ -58,6 +59,126 @@ class InvoiceResource extends Resource
                 ->live()
                 ->default(now()),
 
+            /* ========== SELECT CUSTOMER / COMPANY ========== */
+
+            Forms\Components\Select::make('selected_customer')
+                ->label('Select Customer / Company')
+                ->options(function () {
+                    return Customer::query()
+                        ->get()
+                        ->mapWithKeys(function ($customer) {
+                            return [
+                                $customer->id => $customer->customer['name'] ?? 'Unnamed Customer',
+                            ];
+                        })
+                        ->toArray();
+                })
+                ->searchable()
+                ->preload()
+                ->live()
+                ->dehydrated(false)
+                ->afterStateUpdated(function ($state, callable $set) {
+
+                    if (!$state) {
+                        return;
+                    }
+
+                    $customer = Customer::find($state);
+
+                    if (!$customer) {
+                        return;
+                    }
+
+                    /* ================= CUSTOMER ================= */
+
+                    $customerDetails = $customer->customer ?? [];
+
+                    $set('customer.name', $customerDetails['name'] ?? '');
+                    $set('customer.mobile', $customerDetails['mobile'] ?? '');
+                    $set('customer.address', $customerDetails['address'] ?? '');
+                    $set('customer.gstno', $customerDetails['gstno'] ?? '');
+                    $set('customer.state_name', $customerDetails['state_name'] ?? '');
+                    $set('customer.state_code', $customerDetails['state_code'] ?? '');
+
+
+                    /* ================= SELLER ================= */
+
+                    $seller = $customer->seller ?? [];
+
+                    $set('seller.name', $seller['name'] ?? '');
+                    $set('seller.address', $seller['address'] ?? '');
+                    $set('seller.phone', $seller['phone'] ?? '');
+                    $set('seller.email', $seller['email'] ?? '');
+
+
+                    /* ================= BANK DETAILS ================= */
+
+                    $bank = $customer->bank_details ?? [];
+
+                    $set('bank_details.pan', $bank['pan'] ?? '');
+                    $set('bank_details.bank_name', $bank['bank_name'] ?? '');
+                    $set('bank_details.branch', $bank['branch'] ?? '');
+                    $set('bank_details.account', $bank['account'] ?? '');
+                    $set('bank_details.ifsc', $bank['ifsc'] ?? '');
+                    $set('bank_details.gstin', $bank['gstin'] ?? '');
+
+
+                    /* ================= GST ================= */
+
+                    $set('gst_type', $customer->gst_type ?? '');
+
+                    $gstRate = $customer->gst_rate ?? [];
+
+                    $set('gst_rate.cgst', $gstRate['cgst'] ?? null);
+                    $set('gst_rate.sgst', $gstRate['sgst'] ?? null);
+                    $set('gst_rate.igst', $gstRate['igst'] ?? null);
+
+
+                    /* ================= ITEMS ================= */
+
+                    $set('items', $customer->items ?? []);
+
+
+                    /* ================= PAYMENT ================= */
+
+                    $set(
+                        'advancePayment',
+                        $customer->advancePayment ?? 0
+                    );
+
+                    $set(
+                        'amount',
+                        $customer->amount ?? 0
+                    );
+
+
+                    /* ================= TERMS ================= */
+
+                    $set('terms', $customer->terms ?? '');
+
+
+                    /* ================= DECLARATION ================= */
+
+                    $set('declaration', $customer->declaration ?? '');
+
+
+                    /* ================= SIGNATURE ================= */
+
+                    $set(
+                        'signatureName',
+                        $customer->signatureName ?? ''
+                    );
+
+
+                    /* ================= NOTIFICATION ================= */
+
+                    Notification::make()
+                        ->title('Customer details loaded')
+                        ->success()
+                        ->send();
+                })
+                ->columnSpanFull(),
+
             /* ========== CUSTOMER DETAILS (JSON) ========== */
             Forms\Components\Fieldset::make('Customer Details')
                 ->schema([
@@ -66,73 +187,14 @@ class InvoiceResource extends Resource
                     Forms\Components\Textarea::make('customer.address')->required(),
                     Forms\Components\TextInput::make('customer.gstno')
                         ->label('GST No')
-                        ->maxLength(15)
-                        ->live(onBlur: true)
-                        ->suffixIcon('heroicon-o-arrow-path')
-                        ->afterStateUpdated(function ($state, callable $set) {
+                        ->maxLength(15),
 
-                            $gstNo = strtoupper(trim($state));
-
-                            if (strlen($gstNo) !== 15) {
-                                return;
-                            }
-
-                            $gst = app(\App\Services\GstVerifyService::class)->verify($gstNo);
-
-                            if (! $gst) {
-                                Notification::make()
-                                    ->title('GST Number not found')
-                                    ->danger()
-                                    ->send();
-
-                                return;
-                            }
-
-                            $set('customer.name', $gst['legal_name']);
-                            $set('customer.address', $gst['address']);
-                            $set('customer.state_name', $gst['state']);
-                            $set('customer.state_code', $gst['state_code']);
-
-                            Notification::make()
-                                ->title('GST Verified Successfully')
-                                ->success()
-                                ->send();
-                        }),
                     Forms\Components\TextInput::make('customer.state_name')
                         ->label('State Name'),
 
                     Forms\Components\TextInput::make('customer.state_code')
                         ->label('State Code')
                         ->numeric(),
-                ]),
-
-            /* ========== BANK DETAILS (JSON) ========== */
-            Forms\Components\Fieldset::make('Bank Details')
-                ->schema([
-                    Forms\Components\TextInput::make('bank_details.account')
-                            ->label('Account No')
-                            ->default('1147535073')
-                            ->disabled()
-                            ->dehydrated(true)
-                            ->required(),
-                        Forms\Components\TextInput::make('bank_details.ifsc')
-                            ->label('IFSC')
-                            ->default('KKBK0000841')
-                            ->disabled()
-                            ->dehydrated(true)
-                            ->required(),
-                        Forms\Components\TextInput::make('bank_details.branch')
-                            ->label('Branch')
-                            ->default('Vadodara - Race Course Circle')
-                            ->disabled()
-                            ->dehydrated(true)
-                            ->required(),
-                        Forms\Components\TextInput::make('bank_details.gstin')
-                            ->label('GSTIN')
-                            ->default('24AAVFT0941Q1ZF')
-                            ->disabled()
-                            ->dehydrated(true)
-                            ->required(),
                 ]),
 
             /* ========== GST TYPE ========== */
@@ -225,7 +287,7 @@ class InvoiceResource extends Resource
                         ->required()
                         ->live(onBlur: true),
                 ])
-                ->columns(4)
+                ->columns(2)
                 ->columnSpanFull(),
 
             /* ========== SUBTOTAL & TOTAL AMOUNT ========== */
@@ -238,6 +300,7 @@ class InvoiceResource extends Resource
             Forms\Components\TextInput::make('discount')
                 ->label('Discount (%)')
                 ->numeric()
+                ->default(0)
                 ->live(onBlur: true)
                 ->columnSpan(1)
                 ->afterStateUpdated(fn ($set, $get) => self::calculateGrandTotal($set, $get)),
