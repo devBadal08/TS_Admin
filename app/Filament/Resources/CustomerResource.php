@@ -145,6 +145,36 @@ class CustomerResource extends Resource
                             ->label('Email')
                             ->email(),
 
+                        Forms\Components\Select::make('customer.reference_type')
+                            ->label('Select Reference Type')
+                            ->placeholder('Select Reference Type')
+                            ->options([
+                                'reference_no' => 'Reference No.',
+                                'po_no' => 'PO No.',
+                                'work_order_no' => 'Work Order No.',
+                                'order_no' => 'Order No.',
+                            ])
+                            ->live()
+                            ->afterStateUpdated(
+                                fn (Set $set) => $set('customer.reference_no', null)
+                            ),
+
+                        Forms\Components\TextInput::make('customer.reference_no')
+                            ->label(fn (Get $get) => match (
+                                $get('customer.reference_type')
+                            ) {
+                                'reference_no' => 'Reference No.',
+                                'po_no' => 'PO No.',
+                                'work_order_no' => 'Work Order No.',
+                                'order_no' => 'Order No.',
+                                default => 'Reference Number',
+                            })
+                            ->placeholder('Enter Number')
+                            ->required(fn (Get $get) =>
+                                filled($get('customer.reference_type'))
+                            )
+                            ->maxLength(100),
+
                     ])
                     ->columns(2),
 
@@ -567,6 +597,19 @@ class CustomerResource extends Resource
                     ->date('d-m-Y')
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('customer.reference_type')
+                    ->label('Reference Type')
+                    ->formatStateUsing(fn (?string $state) => match ($state) {
+                        'reference_no' => 'Reference No.',
+                        'po_no' => 'PO No.',
+                        'work_order_no' => 'Work Order No.',
+                        'order_no' => 'Order No.',
+                        default => '-',
+                    }),
+
+                Tables\Columns\TextColumn::make('customer.reference_no')
+                    ->label('Reference Number')
+                    ->searchable(),
             ])
 
             ->actions([

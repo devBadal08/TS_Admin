@@ -201,6 +201,29 @@
                             <strong>{{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-M-Y') }}</strong>
                         </td>
                     </tr>
+                    
+                    @php
+                        $referenceType = $invoice->customer['reference_type'] ?? null;
+                        $referenceNumber = $invoice->customer['reference_no'] ?? null;
+
+                        $referenceLabels = [
+                            'reference_no' => 'Reference No.',
+                            'po_no' => 'PO No.',
+                            'work_order_no' => 'Work Order No.',
+                            'order_no' => 'Order No.',
+                        ];
+
+                        $referenceLabel = $referenceLabels[$referenceType] ?? null;
+                    @endphp
+
+                    @if ($referenceLabel && filled($referenceNumber))
+                        <tr>
+                            <td style="border-left:none; border-right:none; border-bottom:none; font-size:10px;">
+                                <span style="color:#555;">{{ $referenceLabel }}</span><br>
+                                <strong>{{ $referenceNumber }}</strong>
+                            </td>
+                        </tr>
+                    @endif
                 </table>
             </td>
         </tr>

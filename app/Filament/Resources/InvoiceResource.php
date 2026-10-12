@@ -99,7 +99,8 @@ class InvoiceResource extends Resource
                     $set('customer.gstno', $customerDetails['gstno'] ?? '');
                     $set('customer.state_name', $customerDetails['state_name'] ?? '');
                     $set('customer.state_code', $customerDetails['state_code'] ?? '');
-
+                    $set('customer.reference_type', $customerDetails['reference_type'] ?? '');
+                    $set('customer.reference_no',$customerDetails['reference_no'] ?? '');
 
                     /* ================= SELLER ================= */
 
@@ -195,6 +196,33 @@ class InvoiceResource extends Resource
                     Forms\Components\TextInput::make('customer.state_code')
                         ->label('State Code')
                         ->numeric(),
+
+                        Forms\Components\Select::make('customer.reference_type')
+                            ->label('Reference Type')
+                            ->options([
+                                'reference_no' => 'Reference No',
+                                'po_no' => 'PO No',
+                                'work_order_no' => 'Work Order No',
+                                'order_no' => 'Order No',
+                            ])
+                            ->placeholder('Select Reference Type')
+                            ->live(),
+
+                        Forms\Components\TextInput::make('customer.reference_no')
+                            ->label(fn (Forms\Get $get) => match (
+                                $get('customer.reference_type')
+                            ) {
+                                'reference_no' => 'Reference No',
+                                'po_no' => 'PO No',
+                                'work_order_no' => 'Work Order No',
+                                'order_no' => 'Order No',
+                                default => 'Reference Number',
+                            })
+                            ->placeholder('Enter Number')
+                            ->maxLength(100)
+                            ->required(fn (Forms\Get $get) =>
+                                filled($get('customer.reference_type'))
+                            ),
                 ]),
 
             /* ========== GST TYPE ========== */
